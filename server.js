@@ -1,10 +1,16 @@
 require('dotenv').config();
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/config/db');
+const { setupSocket } = require('./src/socket');
 const { notFound, errorHandler } = require('./src/middleware/errorHandler');
 
 const app = express();
+const server = http.createServer(app);
+
+// i controller prendono io con req.app.get('io') per inviare gli eventi realtime
+app.set('io', setupSocket(server));
 
 app.use(cors());
 app.use(express.json());
@@ -24,7 +30,7 @@ async function start() {
   }
   await connectDB();
   const port = process.env.PORT || 3000;
-  app.listen(port, () => {
+  server.listen(port, () => {
     console.log(`Server avviato su http://localhost:${port}`);
   });
 }

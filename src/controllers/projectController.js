@@ -3,6 +3,7 @@ const Task = require('../models/Task');
 const Message = require('../models/Message');
 const User = require('../models/User');
 const AppError = require('../utils/AppError');
+const { removeUserFromRoom } = require('../socket');
 
 const editableFields = ['title', 'description', 'category', 'technologies', 'visibility', 'coverImage'];
 
@@ -122,6 +123,7 @@ async function removeMember(req, res) {
   await project.save();
   // i task del membro rimosso tornano senza assegnatario
   await Task.updateMany({ project: project._id, assignee: userId }, { assignee: null });
+  await removeUserFromRoom(req.app.get('io'), project._id, userId);
   await project.populate('members', 'name email');
 
   res.json({ success: true, data: project.members });
@@ -152,6 +154,7 @@ async function leaveProject(req, res) {
   req.project.members.pull(req.user._id);
   await req.project.save();
   await Task.updateMany({ project: req.project._id, assignee: req.user._id }, { assignee: null });
+  await removeUserFromRoom(req.app.get('io'), req.project._id, req.user._id);
 
   res.json({ success: true, data: { message: 'Hai lasciato il progetto' } });
 }
