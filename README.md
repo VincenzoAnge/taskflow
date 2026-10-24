@@ -13,12 +13,13 @@ Ogni utente può registrarsi, creare progetti, invitare altre persone e organizz
 - Creazione, modifica, archiviazione ed eliminazione dei progetti (solo il proprietario)
 - Gestione dei membri: il proprietario aggiunge e rimuove, chiunque può entrare in un progetto pubblico
 - Task con titolo, descrizione, assegnatario, scadenza e priorità
-- Board Kanban: stato cambiato con un menu a tendina oppure trascinando la card
-- Dashboard personale con riepilogo e task ordinati per scadenza
-- Pagina "Esplora progetti" con filtri per categoria, tecnologia e ordinamento per data
+- Board Kanban: stato cambiato con il pulsante della card (Inizia / Completa / Riapri), trascinando la card o dalla finestra del task
+- Pagina progetto divisa in schede (Board, Chat, Membri), barra di avanzamento, ricerca e filtro "solo i miei task"
+- Dashboard personale con riepilogo, task ordinati per scadenza e spunta veloce per completarli
+- Pagina "Esplora progetti" con ricerca, filtri per categoria e tecnologia e ordinamento per data (si aggiornano da soli)
 - Chat realtime per ogni progetto (solo membri) con Socket.IO
 - Notifiche (toast) quando un task viene creato, modificato, spostato, assegnato o eliminato
-- Pannello admin: elenco utenti, blocco/sblocco, elenco progetti, archiviazione
+- Pannello admin: riepilogo, ricerca, blocco/sblocco utenti, archiviazione progetti
 - Gestione centralizzata degli errori e risposte JSON sempre nello stesso formato
 
 ## Tecnologie

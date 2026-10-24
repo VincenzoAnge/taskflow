@@ -276,8 +276,12 @@ La board è la parte centrale di `public/project.html` e `public/js/project.js`.
 
 - I task del progetto si leggono con `GET /api/projects/:id/tasks`.
 - `renderBoard()` li divide per `status` (`todo`, `doing`, `done`) e li disegna nelle tre colonne.
-- Ogni card ha un **menu a tendina** con lo stato: al cambio parte `PATCH .../tasks/:taskId/status`.
-- In più c'è il **drag and drop**: ogni card è `draggable`, le colonne ascoltano gli eventi `dragover` e `drop`; al rilascio si chiama la stessa funzione `changeStatus()` del menu. Quindi trascinare o usare il menu fa esattamente la stessa cosa.
+- Ogni card ha un **pulsante veloce** che porta il task allo stato successivo (Da fare → In corso → Completato, e "Riapri" per tornare indietro). L'oggetto `NEXT_STEP` dice quale stato viene dopo. Il click chiama `changeStatus()`, che invia `PATCH .../tasks/:taskId/status`.
+- In più c'è il **drag and drop**: ogni card è `draggable`, le colonne ascoltano gli eventi `dragover` e `drop`; al rilascio si chiama la stessa funzione `changeStatus()`. Quindi trascinare o usare il pulsante fa esattamente la stessa cosa.
+- Cliccando una card si apre la finestra con tutti i dettagli (anche lo stato e il pulsante Elimina). Il pulsante "Aggiungi task" in fondo a una colonna apre la stessa finestra con lo stato di quella colonna già scelto.
+- La **ricerca** e il filtro **"Solo i miei task"** non chiamano il server: `visibleTasks()` filtra l'array `tasks` già scaricato e la board viene ridisegnata.
+- La barra di **avanzamento** è calcolata nel browser: task completati diviso task totali.
+- La pagina è divisa in schede Bootstrap (Board, Chat, Membri). Se arriva un messaggio mentre la chat è chiusa, un contatore rosso sulla scheda Chat indica i messaggi non letti.
 - Dopo la modifica il server manda l'evento `taskMoved` e gli altri membri vedono la board aggiornarsi.
 
 ## 15. Come comunicano frontend e backend
@@ -425,7 +429,7 @@ Il client invia `chatMessage` → il server lo salva in MongoDB → lo invia con
 Dopo ogni modifica il controller emette un evento (`taskCreated`, `taskMoved`...) alla stanza del progetto; i client ricaricano la board e mostrano un toast.
 
 **30. Come funziona il drag and drop della board?**
-Le card hanno `draggable="true"`; alla `dragstart` salvo l'id, alla `drop` su una colonna chiamo la stessa funzione che usa il menu a tendina per cambiare lo stato.
+Le card hanno `draggable="true"`; alla `dragstart` salvo l'id, alla `drop` su una colonna chiamo la stessa funzione `changeStatus()` usata dal pulsante della card.
 
 **31. Come hai protetto il frontend dall'iniezione di HTML (XSS)?**
 Il testo scritto dagli utenti passa dalla funzione `esc()`, che sostituisce `<`, `>`, `&` e gli apici prima di inserirlo nella pagina.
