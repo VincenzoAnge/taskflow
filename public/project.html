@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Progetto - TaskFlow</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+  <nav id="navbar"></nav>
+
+  <main class="container py-4">
+    <div id="errorBox" class="alert alert-danger d-none"></div>
+
+    <!-- Intestazione del progetto -->
+    <div id="projectHeader" class="card mb-4 d-none">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+          <div>
+            <h2 class="mb-2" id="projectTitle"></h2>
+            <div class="mb-2" id="projectBadges"></div>
+            <p class="text-muted mb-2" id="projectDescription"></p>
+            <div class="mb-2" id="projectTechnologies"></div>
+            <div class="small text-muted" id="projectOwner"></div>
+          </div>
+          <div class="d-flex flex-wrap gap-2" id="projectActions"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visibile solo a chi non è membro -->
+    <div id="guestArea" class="alert alert-info d-none">
+      Task e chat sono visibili solo ai membri del progetto.
+    </div>
+
+    <!-- Visibile solo ai membri -->
+    <div id="memberArea" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Board</h4>
+        <button class="btn btn-primary btn-sm" id="newTaskBtn"><i class="bi bi-plus-lg"></i> Nuovo task</button>
+      </div>
+
+      <div class="row g-3 mb-4" id="board">
+        <div class="col-md-4">
+          <div class="kanban-column" data-status="todo">
+            <h6 class="mb-3"><i class="bi bi-circle text-secondary"></i> DA FARE <span class="badge text-bg-secondary" id="count-todo">0</span></h6>
+            <div id="col-todo"></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="kanban-column" data-status="doing">
+            <h6 class="mb-3"><i class="bi bi-hourglass-split text-primary"></i> IN CORSO <span class="badge text-bg-primary" id="count-doing">0</span></h6>
+            <div id="col-doing"></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="kanban-column" data-status="done">
+            <h6 class="mb-3"><i class="bi bi-check-circle text-success"></i> COMPLETATO <span class="badge text-bg-success" id="count-done">0</span></h6>
+            <div id="col-done"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="mb-3"><i class="bi bi-chat-dots"></i> Chat del progetto</h5>
+              <div class="chat-box mb-3" id="chatBox"></div>
+              <form id="chatForm" class="input-group">
+                <input type="text" class="form-control" id="chatInput" placeholder="Scrivi un messaggio..." autocomplete="off">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i></button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="mb-3"><i class="bi bi-people"></i> Membri</h5>
+              <ul class="list-group list-group-flush mb-3" id="membersList"></ul>
+              <form id="memberForm" class="input-group d-none">
+                <input type="email" class="form-control" id="memberEmail" placeholder="Email del nuovo membro" required>
+                <button class="btn btn-outline-primary" type="submit">Aggiungi</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal task (creazione e modifica) -->
+  <div class="modal fade" id="taskModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form class="modal-content" id="taskForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="taskModalTitle">Nuovo task</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="taskId">
+          <div class="mb-3">
+            <label class="form-label" for="taskTitle">Titolo</label>
+            <input type="text" class="form-control" id="taskTitle" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="taskDescription">Descrizione</label>
+            <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label" for="taskAssignee">Assegnato a</label>
+              <select class="form-select" id="taskAssignee"></select>
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label" for="taskDueDate">Scadenza</label>
+              <input type="date" class="form-control" id="taskDueDate">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="taskPriority">Priorità</label>
+            <select class="form-select" id="taskPriority">
+              <option value="low">Bassa</option>
+              <option value="medium" selected>Media</option>
+              <option value="high">Alta</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annulla</button>
+          <button type="submit" class="btn btn-primary">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal modifica progetto -->
+  <div class="modal fade" id="editProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form class="modal-content" id="editProjectForm">
+        <div class="modal-header">
+          <h5 class="modal-title">Modifica progetto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="editTitle">Titolo</label>
+            <input type="text" class="form-control" id="editTitle" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="editDescription">Descrizione</label>
+            <textarea class="form-control" id="editDescription" rows="3"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label" for="editCategory">Categoria</label>
+              <select class="form-select" id="editCategory"></select>
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label" for="editVisibility">Visibilità</label>
+              <select class="form-select" id="editVisibility">
+                <option value="public">Pubblico</option>
+                <option value="private">Privato</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="editTechnologies">Tecnologie</label>
+            <input type="text" class="form-control" id="editTechnologies">
+            <div class="form-text">Separate da virgola.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="editCover">Immagine di copertina (URL)</label>
+            <input type="url" class="form-control" id="editCover">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annulla</button>
+          <button type="submit" class="btn btn-primary">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/project.js"></script>
+</body>
+</html>

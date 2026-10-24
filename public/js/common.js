@@ -51,8 +51,9 @@ async function api(path, method = 'GET', body) {
   const json = await response.json();
 
   if (!json.success) {
-    // token scaduto o utente non più valido: si torna al login
-    if (response.status === 401 && getToken()) {
+    // token scaduto, utente non più valido o account bloccato: si torna al login
+    const sessionInvalid = response.status === 401 || json.message === 'Account bloccato';
+    if (sessionInvalid && getToken()) {
       logout();
     }
     throw new Error(json.message);
