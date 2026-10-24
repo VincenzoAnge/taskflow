@@ -6,6 +6,16 @@ const STATUS_COLORS = { todo: 'secondary', doing: 'primary', done: 'success' };
 const PRIORITY_LABELS = { low: 'Bassa', medium: 'Media', high: 'Alta' };
 const PRIORITY_COLORS = { low: 'secondary', medium: 'warning', high: 'danger' };
 
+// Ogni categoria ha una sua icona e un suo gradiente per la copertina
+const CATEGORY_STYLES = {
+  Web: { icon: 'bi-globe2', gradient: 'linear-gradient(135deg, #4f46e5, #0ea5e9)' },
+  Mobile: { icon: 'bi-phone', gradient: 'linear-gradient(135deg, #ec4899, #f97316)' },
+  Dati: { icon: 'bi-bar-chart-line', gradient: 'linear-gradient(135deg, #059669, #14b8a6)' },
+  Gioco: { icon: 'bi-controller', gradient: 'linear-gradient(135deg, #7c3aed, #d946ef)' },
+  Altro: { icon: 'bi-stars', gradient: 'linear-gradient(135deg, #475569, #94a3b8)' }
+};
+const AVATAR_COLORS = ['#4f46e5', '#0ea5e9', '#059669', '#d97706', '#db2777', '#7c3aed', '#475569'];
+
 // --- Sessione (il token JWT è salvato nel localStorage) ---
 
 function getToken() {
@@ -31,7 +41,9 @@ function logout() {
 // Le pagine private chiamano questa funzione per mandare al login chi non ha il token
 function requireLogin() {
   if (!getToken()) {
-    window.location.href = '/login.html';
+    // dopo il login si torna alla pagina che si voleva aprire
+    const next = window.location.pathname + window.location.search;
+    window.location.href = '/login.html?next=' + encodeURIComponent(next);
   }
 }
 
@@ -43,12 +55,18 @@ async function api(path, method = 'GET', body) {
     headers.Authorization = 'Bearer ' + getToken();
   }
 
-  const response = await fetch('/api' + path, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined
-  });
-  const json = await response.json();
+  let response;
+  let json;
+  try {
+    response = await fetch('/api' + path, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    json = await response.json();
+  } catch (err) {
+    throw new Error('Server non raggiungibile, riprova tra poco');
+  }
 
   if (!json.success) {
     // token scaduto, utente non più valido o account bloccato: si torna al login
@@ -62,6 +80,23 @@ async function api(path, method = 'GET', body) {
 }
 
 // --- Utilità per la grafica ---
+
+// Cerchietto colorato con le iniziali del nome (il colore dipende dal nome)
+function avatar(name, size = '') {
+  const text = String(name || '?').trim();
+  const initials = text.split(/\s+/).slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('');
+  let sum = 0;
+  for (const char of text) {
+    sum += char.charCodeAt(0);
+  }
+  const color = AVATAR_COLORS[sum % AVATAR_COLORS.length];
+  return `<span class="avatar ${size}" style="background:${color}" title="${esc(text)}">${esc(initials)}</span>`;
+}
+
+// Copertina di un progetto: immagine se c'è, altrimenti gradiente + icona della categoria
+function coverStyle(category) {
+  return CATEGORY_STYLES[category] || CATEGORY_STYLES.Altro;
+}
 
 // Evita che il testo inserito dagli utenti venga interpretato come HTML
 function esc(text) {
@@ -111,7 +146,7 @@ function renderNavbar() {
 
   const link = (href, icon, text) => `
     <li class="nav-item">
-      <a class="nav-link ${path === href ? 'active fw-semibold' : ''}" href="${href}">
+      <a class="nav-link ${path === href ? 'active' : ''}" href="${href}">
         <i class="bi ${icon}"></i> ${text}
       </a>
     </li>`;
@@ -127,16 +162,16 @@ function renderNavbar() {
       links += link('/admin.html', 'bi-shield-lock', 'Admin');
     }
     right = `
-      <span class="text-muted small me-3"><i class="bi bi-person-circle"></i> ${esc(user.name)}</span>
-      <button id="logoutBtn" class="btn btn-outline-secondary btn-sm">Esci</button>`;
+      <span class="d-flex align-items-center gap-2 me-3 small fw-semibold">${avatar(user.name)} ${esc(user.name)}</span>
+      <button id="logoutBtn" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-right"></i> Esci</button>`;
   }
 
   const navbar = document.getElementById('navbar');
-  navbar.className = 'navbar navbar-expand-lg bg-white border-bottom';
+  navbar.className = 'navbar navbar-expand-lg app-navbar';
   navbar.innerHTML = `
     <div class="container">
-      <a class="navbar-brand fw-bold text-primary" href="/">
-        <i class="bi bi-kanban"></i> TaskFlow
+      <a class="navbar-brand d-flex align-items-center" href="/">
+        <span class="brand-logo"><i class="bi bi-kanban"></i></span> TaskFlow
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
         <span class="navbar-toggler-icon"></span>
@@ -150,36 +185,59 @@ function renderNavbar() {
   if (user) {
     document.getElementById('logoutBtn').addEventListener('click', logout);
   }
+
+  renderFooter();
+}
+
+function renderFooter() {
+  if (document.getElementById('footer')) {
+    return;
+  }
+  const footer = document.createElement('footer');
+  footer.id = 'footer';
+  footer.className = 'site-footer';
+  footer.innerHTML = `
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+      <span><i class="bi bi-kanban text-primary"></i> <strong>TaskFlow</strong> &middot; Progetto finale Node.js</span>
+      <span>Node.js &middot; Express &middot; MongoDB &middot; Socket.IO</span>
+    </div>`;
+  document.body.appendChild(footer);
 }
 
 // Card di un progetto, usata in dashboard, esplora e home
 function projectCard(project) {
   const technologies = (project.technologies || [])
-    .map((t) => `<span class="badge text-bg-light border">${esc(t)}</span>`)
+    .slice(0, 4)
+    .map((t) => `<span class="badge tech-badge">${esc(t)}</span>`)
     .join(' ');
+  const style = coverStyle(project.category);
   const cover = project.coverImage
     ? `<img src="${esc(project.coverImage)}" alt="" onerror="this.remove()">`
     : '';
-  const owner = project.owner && project.owner.name ? `<i class="bi bi-person"></i> ${esc(project.owner.name)}` : '';
-  const visibilityIcon = project.visibility === 'private' ? 'bi-lock' : 'bi-globe';
+  const owner = project.owner && project.owner.name
+    ? `${avatar(project.owner.name, 'avatar-sm')} <span>${esc(project.owner.name)}</span>`
+    : '';
+  const visibilityIcon = project.visibility === 'private' ? 'bi-lock-fill' : 'bi-globe';
   const archived = project.archived ? '<span class="badge text-bg-warning">Archiviato</span>' : '';
 
   return `
     <div class="col">
       <a href="/project.html?id=${project._id}" class="text-decoration-none text-reset">
         <div class="card project-card">
-          <div class="project-cover">${esc(project.title.charAt(0).toUpperCase())}${cover}</div>
+          <div class="project-cover" style="background:${style.gradient}">
+            <span class="cover-icon"><i class="bi ${style.icon}"></i></span>${cover}
+          </div>
           <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-1">
+            <div class="d-flex justify-content-between align-items-start mb-2">
               <h5 class="card-title mb-0">${esc(project.title)}</h5>
-              <i class="bi ${visibilityIcon} text-muted"></i>
+              <i class="bi ${visibilityIcon} text-muted ms-2"></i>
             </div>
             <div class="mb-2">
-              <span class="badge text-bg-primary">${esc(project.category)}</span> ${archived}
+              <span class="badge bg-primary-subtle text-primary-emphasis">${esc(project.category)}</span> ${archived}
             </div>
             <p class="card-text text-muted small line-clamp-2">${esc(project.description) || 'Nessuna descrizione'}</p>
-            <div class="mb-2">${technologies}</div>
-            <div class="small text-muted">${owner}</div>
+            <div class="mb-3">${technologies}</div>
+            <div class="small text-muted d-flex align-items-center gap-2">${owner}</div>
           </div>
         </div>
       </a>

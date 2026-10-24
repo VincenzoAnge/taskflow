@@ -8,18 +8,20 @@ function renderTasks(tasks) {
   const list = document.getElementById('myTasks');
 
   if (tasks.length === 0) {
-    list.innerHTML = '<li class="list-group-item text-muted">Nessun task assegnato a te.</li>';
+    list.innerHTML = '<li class="list-group-item"><div class="empty-state border-0"><i class="bi bi-check2-all"></i>Nessun task assegnato a te.</div></li>';
     return;
   }
 
   list.innerHTML = tasks.map((task) => {
-    const overdue = task.dueDate && task.status !== 'done' && new Date(task.dueDate) < new Date();
+    // scaduto = la data è precedente a oggi (un task che scade oggi non è ancora in ritardo)
+    const startOfToday = new Date().setHours(0, 0, 0, 0);
+    const overdue = task.dueDate && task.status !== 'done' && new Date(task.dueDate) < startOfToday;
     const due = task.dueDate
       ? `<span class="${overdue ? 'text-danger' : 'text-muted'}"><i class="bi bi-calendar"></i> ${formatDate(task.dueDate)}</span>`
       : '<span class="text-muted">Nessuna scadenza</span>';
 
     return `
-      <li class="list-group-item">
+      <li class="list-group-item py-3">
         <div class="d-flex justify-content-between align-items-start">
           <a href="/project.html?id=${task.project._id}" class="fw-semibold text-decoration-none">${esc(task.title)}</a>
           <span class="badge text-bg-${STATUS_COLORS[task.status]}">${STATUS_LABELS[task.status]}</span>
@@ -34,7 +36,7 @@ function renderProjects(containerId, projects, emptyText) {
   const container = document.getElementById(containerId);
   container.innerHTML = projects.length > 0
     ? projects.map(projectCard).join('')
-    : `<p class="text-muted">${emptyText}</p>`;
+    : `<div class="col-12"><div class="empty-state"><i class="bi bi-folder2-open"></i>${emptyText}</div></div>`;
 }
 
 async function loadDashboard() {
