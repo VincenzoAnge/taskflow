@@ -14,38 +14,41 @@
   <nav id="navbar"></nav>
 
   <main class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
       <div>
         <h2 class="page-title" id="welcome">Dashboard</h2>
-        <p class="text-muted mb-0">Ecco un riepilogo del tuo lavoro.</p>
+        <p class="text-muted mb-0" id="today"></p>
       </div>
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#projectModal">
-        <i class="bi bi-plus-lg"></i> Nuovo progetto
-      </button>
+      <div class="d-flex gap-2">
+        <a href="/explore.html" class="btn btn-outline-secondary"><i class="bi bi-compass"></i> Esplora</a>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#projectModal">
+          <i class="bi bi-plus-lg"></i> Nuovo progetto
+        </button>
+      </div>
     </div>
 
     <!-- Card riepilogative -->
     <div class="row row-cols-2 row-cols-lg-4 g-3 mb-4">
       <div class="col">
-        <div class="card"><div class="card-body d-flex align-items-center gap-3">
+        <div class="card h-100"><div class="card-body d-flex align-items-center gap-3">
           <div class="stat-icon tint-indigo"><i class="bi bi-folder"></i></div>
           <div><div class="stat-number" id="statProjects">0</div><div class="text-muted small">Progetti</div></div>
         </div></div>
       </div>
       <div class="col">
-        <div class="card"><div class="card-body d-flex align-items-center gap-3">
+        <div class="card h-100"><div class="card-body d-flex align-items-center gap-3">
           <div class="stat-icon tint-slate"><i class="bi bi-circle"></i></div>
           <div><div class="stat-number" id="statTodo">0</div><div class="text-muted small">Da fare</div></div>
         </div></div>
       </div>
       <div class="col">
-        <div class="card"><div class="card-body d-flex align-items-center gap-3">
+        <div class="card h-100"><div class="card-body d-flex align-items-center gap-3">
           <div class="stat-icon tint-amber"><i class="bi bi-hourglass-split"></i></div>
           <div><div class="stat-number" id="statDoing">0</div><div class="text-muted small">In corso</div></div>
         </div></div>
       </div>
       <div class="col">
-        <div class="card"><div class="card-body d-flex align-items-center gap-3">
+        <div class="card h-100"><div class="card-body d-flex align-items-center gap-3">
           <div class="stat-icon tint-emerald"><i class="bi bi-check-circle"></i></div>
           <div><div class="stat-number" id="statDone">0</div><div class="text-muted small">Completati</div></div>
         </div></div>
@@ -53,17 +56,41 @@
     </div>
 
     <div class="row g-4">
+      <!-- Progetti -->
       <div class="col-lg-8">
-        <h5 class="mb-3">I miei progetti</h5>
-        <div id="createdProjects" class="row row-cols-1 row-cols-md-2 g-3 mb-4"></div>
-
-        <h5 class="mb-3">Progetti a cui partecipo</h5>
-        <div id="memberProjects" class="row row-cols-1 row-cols-md-2 g-3"></div>
+        <ul class="nav nav-pills project-tabs mb-3">
+          <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#createdTab" type="button">
+              Creati da me <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis" id="createdCount">0</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#memberTab" type="button">
+              A cui partecipo <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis" id="memberCount">0</span>
+            </button>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="createdTab">
+            <div id="createdProjects" class="row row-cols-1 row-cols-md-2 g-3"></div>
+          </div>
+          <div class="tab-pane fade" id="memberTab">
+            <div id="memberProjects" class="row row-cols-1 row-cols-md-2 g-3"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="col-lg-4">
-        <h5 class="mb-3">I miei task</h5>
-        <div class="card">
+      <!-- Task assegnati a me (su telefono vengono prima dei progetti) -->
+      <div class="col-lg-4 order-first order-lg-last">
+        <div class="card tasks-panel">
+          <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+            <h6 class="mb-0"><i class="bi bi-list-check"></i> I miei task</h6>
+            <div class="btn-group btn-group-sm" id="taskFilter">
+              <button class="btn btn-outline-secondary active" data-filter="open">Aperti</button>
+              <button class="btn btn-outline-secondary" data-filter="done">Fatti</button>
+              <button class="btn btn-outline-secondary" data-filter="all">Tutti</button>
+            </div>
+          </div>
           <ul class="list-group list-group-flush" id="myTasks"></ul>
         </div>
       </div>

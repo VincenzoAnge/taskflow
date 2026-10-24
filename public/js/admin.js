@@ -6,17 +6,31 @@ if (getUser().role !== 'admin') {
   window.location.href = '/dashboard.html';
 }
 
-async function loadUsers() {
-  const users = await api('/admin/users');
+let users = [];
+let projects = [];
 
-  document.getElementById('usersTable').innerHTML = users.map((user) => {
+// La ricerca filtra le righe già scaricate
+function matches(...fields) {
+  const search = document.getElementById('adminSearch').value.trim().toLowerCase();
+  return fields.some((field) => String(field).toLowerCase().includes(search));
+}
+
+async function loadUsers() {
+  users = await api('/admin/users');
+  document.getElementById('statUsers').textContent = users.length;
+  document.getElementById('statBlocked').textContent = users.filter((u) => u.blocked).length;
+  renderUsers();
+}
+
+function renderUsers() {
+  document.getElementById('usersTable').innerHTML = users.filter((u) => matches(u.name, u.email)).map((user) => {
     const status = user.blocked
       ? '<span class="badge text-bg-danger">Bloccato</span>'
       : '<span class="badge text-bg-success">Attivo</span>';
     const action = user.role === 'admin'
       ? ''
-      : `<button class="btn btn-sm btn-outline-secondary block-user" data-id="${user._id}">
-           ${user.blocked ? 'Sblocca' : 'Blocca'}
+      : `<button class="btn btn-sm ${user.blocked ? 'btn-outline-success' : 'btn-outline-danger'} block-user" data-id="${user._id}">
+           <i class="bi ${user.blocked ? 'bi-unlock' : 'bi-lock'}"></i> ${user.blocked ? 'Sblocca' : 'Blocca'}
          </button>`;
 
     return `
@@ -32,9 +46,14 @@ async function loadUsers() {
 }
 
 async function loadProjects() {
-  const projects = await api('/admin/projects');
+  projects = await api('/admin/projects');
+  document.getElementById('statProjectsAdmin').textContent = projects.length;
+  document.getElementById('statArchived').textContent = projects.filter((p) => p.archived).length;
+  renderProjects();
+}
 
-  document.getElementById('projectsTable').innerHTML = projects.map((project) => {
+function renderProjects() {
+  document.getElementById('projectsTable').innerHTML = projects.filter((p) => matches(p.title, p.owner.name)).map((project) => {
     const status = project.archived
       ? '<span class="badge text-bg-warning">Archiviato</span>'
       : '<span class="badge text-bg-success">Attivo</span>';
@@ -48,12 +67,17 @@ async function loadProjects() {
         <td>${status}</td>
         <td class="text-end">
           <button class="btn btn-sm btn-outline-secondary archive-project" data-id="${project._id}">
-            ${project.archived ? 'Ripristina' : 'Archivia'}
+            <i class="bi ${project.archived ? 'bi-arrow-counterclockwise' : 'bi-archive'}"></i> ${project.archived ? 'Ripristina' : 'Archivia'}
           </button>
         </td>
       </tr>`;
   }).join('');
 }
+
+document.getElementById('adminSearch').addEventListener('input', () => {
+  renderUsers();
+  renderProjects();
+});
 
 document.getElementById('usersTable').addEventListener('click', async (event) => {
   const button = event.target.closest('.block-user');

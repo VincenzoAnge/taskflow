@@ -14,32 +14,39 @@
   <nav id="navbar"></nav>
 
   <main class="container py-4">
-    <h2 class="mb-1">Esplora progetti</h2>
-    <p class="text-muted mb-4">I progetti pubblici di TaskFlow. Entra in un progetto per partecipare.</p>
+    <h2 class="page-title">Esplora progetti</h2>
+    <p class="text-muted mb-4">I progetti pubblici di TaskFlow. Apri un progetto e premi "Partecipa" per entrare nel team.</p>
 
-    <div class="card mb-4">
+    <div class="card mb-3">
       <div class="card-body">
         <form id="filterForm" class="row g-3 align-items-end">
-          <div class="col-md-4">
-            <label class="form-label" for="filterCategory">Categoria</label>
-            <select class="form-select" id="filterCategory"></select>
+          <div class="col-md-5">
+            <label class="form-label" for="filterSearch">Cerca</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="search" class="form-control" id="filterSearch" placeholder="Titolo o descrizione">
+            </div>
           </div>
           <div class="col-md-4">
             <label class="form-label" for="filterTechnology">Tecnologia</label>
-            <input type="text" class="form-control" id="filterTechnology" placeholder="es. node">
+            <input type="text" class="form-control" id="filterTechnology" placeholder="es. node" list="techList">
+            <datalist id="techList"></datalist>
           </div>
-          <div class="col-md-2">
+          <div class="col-md-3">
             <label class="form-label" for="filterSort">Ordina</label>
             <select class="form-select" id="filterSort">
               <option value="newest">Più recenti</option>
               <option value="oldest">Meno recenti</option>
             </select>
           </div>
-          <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Filtra</button>
-          </div>
         </form>
+        <div class="d-flex flex-wrap gap-2 mt-3" id="categoryChips"></div>
       </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="text-muted small" id="resultCount"></span>
+      <button class="btn btn-link btn-sm text-decoration-none" id="resetFilters"><i class="bi bi-x-circle"></i> Azzera filtri</button>
     </div>
 
     <div id="projects" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"></div>
