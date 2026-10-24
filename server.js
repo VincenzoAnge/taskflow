@@ -19,6 +19,7 @@ app.use(express.static('public'));
 app.use('/api/auth', require('./src/routes/authRoutes'));
 app.use('/api/users', require('./src/routes/userRoutes'));
 app.use('/api/projects', require('./src/routes/projectRoutes'));
+app.use('/api/admin', require('./src/routes/adminRoutes'));
 
 app.use('/api', notFound);
 app.use(errorHandler);
