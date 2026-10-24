@@ -163,7 +163,10 @@ Commit creati, in ordine:
 14. `ffe23b6` fix: only members can leave a project
 15. `8a4c3a1` docs: add API, database, architecture, setup docs and study guide
 16. `cd4743b` test: verify application flows
-17. chore: final cleanup (questo commit: aggiunge FINAL_REPORT.md e indica la versione di Node richiesta)
+17. `4183e92` chore: final cleanup
+18. `3426bc7` fix: return 400 instead of 500 for missing or invalid request data
+19. `b179b74` fix: improve login flow, network errors and overdue date check
+20. style: redesign frontend with category covers, avatars and new layout (ultimo commit)
 
 Il file `.env` non è nel repository (è nel `.gitignore`): contiene solo `.env.example` senza segreti.
 
