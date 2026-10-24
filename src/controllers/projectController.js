@@ -147,6 +147,9 @@ async function joinProject(req, res) {
 }
 
 async function leaveProject(req, res) {
+  if (!req.isMember) {
+    throw new AppError('Non sei membro di questo progetto', 400);
+  }
   if (req.isOwner) {
     throw new AppError('Il proprietario non può lasciare il progetto', 400);
   }
