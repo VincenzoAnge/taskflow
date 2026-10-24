@@ -33,7 +33,7 @@ Ogni utente può registrarsi, creare progetti, invitare altre persone e organizz
 
 ## Installazione
 
-Servono Node.js 18 o superiore e un MongoDB raggiungibile (locale oppure MongoDB Atlas).
+Servono Node.js 20.19 o superiore e un MongoDB raggiungibile (locale oppure MongoDB Atlas).
 
 ```bash
 npm install

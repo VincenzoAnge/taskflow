@@ -4,7 +4,7 @@ Guida passo passo per far partire il progetto su un computer nuovo.
 
 ## 1. Cosa serve
 
-- **Node.js 18 o superiore** (controlla con `node -v`)
+- **Node.js 20.19 o superiore** (controlla con `node -v`)
 - **Git** (facoltativo, serve per clonare il repository)
 - **MongoDB**: ne basta uno tra
   - MongoDB Community installato sul computer, oppure
@@ -82,6 +82,8 @@ Con il server in funzione e i dati demo caricati:
 ```bash
 npm test
 ```
+
+I test creano alcuni utenti di prova nel database: per ripulirlo esegui di nuovo `npm run seed`.
 
 ## Problemi comuni
 
