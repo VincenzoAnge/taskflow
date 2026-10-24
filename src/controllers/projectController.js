@@ -27,6 +27,25 @@ async function createProject(req, res) {
   res.status(201).json({ success: true, data: project });
 }
 
+// Pagina "Esplora": progetti pubblici non archiviati, con filtri opzionali
+async function getPublicProjects(req, res) {
+  const { category, technology, sort } = req.query;
+  const filter = { visibility: 'public', archived: false };
+
+  if (category) {
+    filter.category = category;
+  }
+  if (technology) {
+    filter.technologies = technology.trim().toLowerCase();
+  }
+
+  const projects = await Project.find(filter)
+    .populate('owner', 'name')
+    .sort({ createdAt: sort === 'oldest' ? 1 : -1 });
+
+  res.json({ success: true, data: projects });
+}
+
 async function getProject(req, res) {
   const project = req.project;
 
@@ -139,6 +158,7 @@ async function leaveProject(req, res) {
 
 module.exports = {
   createProject,
+  getPublicProjects,
   getProject,
   updateProject,
   deleteProject,

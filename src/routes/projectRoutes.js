@@ -5,6 +5,9 @@ const { loadProject, requireMember, requireOwner } = require('../middleware/proj
 
 const router = express.Router();
 
+// Unica route senza login: serve alla pagina "Esplora progetti"
+router.get('/public', controller.getPublicProjects);
+
 router.use(protect);
 
 router.post('/', controller.createProject);
