@@ -116,6 +116,24 @@ function formatTime(date) {
   return new Date(date).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 }
 
+// Scadenza di un task: in rosso se è passata, in arancione se è oggi
+function dueLabel(task) {
+  if (!task.dueDate) {
+    return '';
+  }
+  const today = new Date().setHours(0, 0, 0, 0);
+  const due = new Date(task.dueDate).setHours(0, 0, 0, 0);
+  const open = task.status !== 'done';
+
+  if (open && due < today) {
+    return `<span class="due due-late"><i class="bi bi-exclamation-circle"></i> Scaduto il ${formatDate(task.dueDate)}</span>`;
+  }
+  if (open && due === today) {
+    return '<span class="due due-today"><i class="bi bi-alarm"></i> Scade oggi</span>';
+  }
+  return `<span class="due"><i class="bi bi-calendar-event"></i> ${formatDate(task.dueDate)}</span>`;
+}
+
 function showToast(message, type = 'primary') {
   let container = document.getElementById('toastContainer');
   if (!container) {
@@ -162,8 +180,19 @@ function renderNavbar() {
       links += link('/admin.html', 'bi-shield-lock', 'Admin');
     }
     right = `
-      <span class="d-flex align-items-center gap-2 me-3 small fw-semibold">${avatar(user.name)} ${esc(user.name)}</span>
-      <button id="logoutBtn" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-right"></i> Esci</button>`;
+      <div class="dropdown">
+        <button class="btn user-menu dropdown-toggle" data-bs-toggle="dropdown" id="userMenuBtn">
+          ${avatar(user.name)} <span class="fw-semibold">${esc(user.name)}</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><span class="dropdown-item-text small text-muted">${esc(user.email)}</span></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="/dashboard.html"><i class="bi bi-grid"></i> Dashboard</a></li>
+          <li><a class="dropdown-item" href="/explore.html"><i class="bi bi-compass"></i> Esplora progetti</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item text-danger" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> Esci</button></li>
+        </ul>
+      </div>`;
   }
 
   const navbar = document.getElementById('navbar');
@@ -245,9 +274,8 @@ function projectCard(project) {
 }
 
 // Riempie un <select> con le categorie
-function fillCategorySelect(select, withAll) {
-  const options = CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join('');
-  select.innerHTML = (withAll ? '<option value="">Tutte le categorie</option>' : '') + options;
+function fillCategorySelect(select) {
+  select.innerHTML = CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join('');
 }
 
 // "react, node ,mongo" diventa ['react', 'node', 'mongo']
