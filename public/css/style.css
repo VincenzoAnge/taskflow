@@ -1,0 +1,159 @@
+body {
+  background: #f5f7fb;
+  color: #1e293b;
+}
+
+.navbar {
+  box-shadow: 0 1px 6px rgba(30, 41, 59, 0.06);
+}
+
+.card {
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(30, 41, 59, 0.07);
+}
+
+.modal-content {
+  border: 0;
+  border-radius: 14px;
+}
+
+/* Hero della home */
+.hero {
+  padding: 80px 0 60px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-weight: 700;
+  font-size: 2.8rem;
+}
+
+.feature-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #e7f0ff;
+  color: #0d6efd;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+/* Card dei progetti */
+.project-card {
+  height: 100%;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.project-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(30, 41, 59, 0.12);
+}
+
+.project-cover {
+  position: relative;
+  height: 110px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(135deg, #4263eb, #7048e8);
+  color: #fff;
+  font-size: 2.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.project-cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card riepilogative della dashboard */
+.stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.stat-number {
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Board Kanban */
+.kanban-column {
+  background: #e9edf5;
+  border-radius: 14px;
+  padding: 14px;
+  min-height: 280px;
+}
+
+.kanban-column.drag-over {
+  outline: 2px dashed #0d6efd;
+  background: #e1e9fb;
+}
+
+.task-card {
+  cursor: grab;
+}
+
+.task-card:active {
+  cursor: grabbing;
+}
+
+/* Chat */
+.chat-box {
+  height: 320px;
+  overflow-y: auto;
+  background: #f8f9fc;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.chat-message {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(30, 41, 59, 0.08);
+  margin-bottom: 8px;
+}
+
+.chat-message.mine {
+  margin-left: auto;
+  background: #dbe7ff;
+}
+
+.chat-author {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.chat-time {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.toast-container {
+  z-index: 2000;
+}
