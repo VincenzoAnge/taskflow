@@ -1,7 +1,7 @@
 const express = require('express');
 const controller = require('../controllers/projectController');
 const { protect } = require('../middleware/auth');
-const { loadProject, requireOwner } = require('../middleware/project');
+const { loadProject, requireMember, requireOwner } = require('../middleware/project');
 
 const router = express.Router();
 
@@ -15,6 +15,8 @@ router.patch('/:id/archive', loadProject, requireOwner, controller.toggleArchive
 
 router.post('/:id/members', loadProject, requireOwner, controller.addMember);
 router.delete('/:id/members/:userId', loadProject, requireOwner, controller.removeMember);
+
+router.use('/:id/tasks', loadProject, requireMember, require('./taskRoutes'));
 
 router.post('/:id/join', loadProject, controller.joinProject);
 router.post('/:id/leave', loadProject, controller.leaveProject);
