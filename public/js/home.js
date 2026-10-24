@@ -2,6 +2,7 @@ renderNavbar();
 
 const heroButtons = document.getElementById('heroButtons');
 if (getToken()) {
+  document.getElementById('ctaBand').remove();
   heroButtons.innerHTML = '<a href="/dashboard.html" class="btn btn-primary btn-lg">Vai alla dashboard</a>';
 } else {
   heroButtons.innerHTML = `

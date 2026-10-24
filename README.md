@@ -40,6 +40,8 @@ npm install
 cp .env.example .env
 ```
 
+Su Windows, nel Prompt dei comandi (cmd) usa `copy .env.example .env`; in PowerShell `cp` funziona come sopra.
+
 Poi apri `.env` e controlla i valori (vedi la sezione successiva).
 
 ## Configurazione

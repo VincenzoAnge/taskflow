@@ -21,9 +21,9 @@ async function loadUsers() {
 
     return `
       <tr>
-        <td>${esc(user.name)}</td>
+        <td><span class="d-flex align-items-center gap-2">${avatar(user.name)} ${esc(user.name)}</span></td>
         <td>${esc(user.email)}</td>
-        <td>${user.role === 'admin' ? 'Admin' : 'Utente'}</td>
+        <td>${user.role === 'admin' ? '<span class="badge bg-primary-subtle text-primary-emphasis">Admin</span>' : 'Utente'}</td>
         <td>${status}</td>
         <td>${formatDate(user.createdAt)}</td>
         <td class="text-end">${action}</td>

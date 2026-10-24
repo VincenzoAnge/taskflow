@@ -31,6 +31,8 @@ Viene creata la cartella `node_modules/` con tutti i pacchetti elencati in `pack
 cp .env.example .env
 ```
 
+Su Windows, nel Prompt dei comandi (cmd) usa `copy .env.example .env`; in PowerShell `cp` funziona come sopra.
+
 Apri `.env` e imposta:
 
 ```

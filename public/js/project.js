@@ -40,6 +40,12 @@ function renderHeader() {
   document.title = project.title + ' - TaskFlow';
   document.getElementById('projectHeader').classList.remove('d-none');
   document.getElementById('projectTitle').textContent = project.title;
+
+  const style = coverStyle(project.category);
+  const banner = document.getElementById('projectBanner');
+  banner.style.background = style.gradient;
+  banner.innerHTML = `<span class="cover-icon"><i class="bi ${style.icon}"></i></span>` +
+    (project.coverImage ? `<img src="${esc(project.coverImage)}" alt="" onerror="this.remove()">` : '');
   document.getElementById('projectDescription').textContent = project.description || 'Nessuna descrizione';
 
   const visibility = project.visibility === 'private'
@@ -50,11 +56,11 @@ function renderHeader() {
     `<span class="badge text-bg-primary">${esc(project.category)}</span> ${visibility}${archived}`;
 
   document.getElementById('projectTechnologies').innerHTML = project.technologies
-    .map((t) => `<span class="badge text-bg-light border">${esc(t)}</span>`)
+    .map((t) => `<span class="badge tech-badge">${esc(t)}</span>`)
     .join(' ');
 
-  document.getElementById('projectOwner').textContent =
-    `Creato da ${project.owner.name} il ${formatDate(project.createdAt)}`;
+  document.getElementById('projectOwner').innerHTML =
+    `${avatar(project.owner.name, 'avatar-sm')} Creato da ${esc(project.owner.name)} il ${formatDate(project.createdAt)}`;
 
   renderActions();
 }
@@ -163,9 +169,14 @@ function renderMembers() {
     return `
       <li class="list-group-item d-flex justify-content-between align-items-center px-0">
         <div>
-          <i class="bi bi-person-circle"></i> ${esc(member.name)}
-          ${isOwner ? '<span class="badge text-bg-primary">Proprietario</span>' : ''}
-          <div class="small text-muted">${esc(member.email)}</div>
+          <div class="d-flex align-items-center gap-2">
+            ${avatar(member.name, 'avatar-lg')}
+            <div>
+              <div class="fw-semibold">${esc(member.name)}
+                ${isOwner ? '<span class="badge bg-primary-subtle text-primary-emphasis">Proprietario</span>' : ''}</div>
+              <div class="small text-muted">${esc(member.email)}</div>
+            </div>
+          </div>
         </div>
         ${removeButton}
       </li>`;
@@ -212,19 +223,25 @@ function taskCard(task) {
   const statusOptions = Object.keys(STATUS_LABELS)
     .map((s) => `<option value="${s}" ${s === task.status ? 'selected' : ''}>${STATUS_LABELS[s]}</option>`)
     .join('');
-  const assignee = task.assignee ? esc(task.assignee.name) : 'Non assegnato';
-  const dueDate = task.dueDate ? ` &middot; <i class="bi bi-calendar"></i> ${formatDate(task.dueDate)}` : '';
+  const assignee = task.assignee
+    ? `${avatar(task.assignee.name, 'avatar-sm')} ${esc(task.assignee.name)}`
+    : '<i class="bi bi-person-dash"></i> Non assegnato';
+  const startOfToday = new Date().setHours(0, 0, 0, 0);
+  const overdue = task.dueDate && task.status !== 'done' && new Date(task.dueDate) < startOfToday;
+  const dueDate = task.dueDate
+    ? `<span class="${overdue ? 'text-danger fw-semibold' : ''}"><i class="bi bi-calendar"></i> ${formatDate(task.dueDate)}</span>`
+    : '';
   const description = task.description ? `<p class="small text-muted mb-2">${esc(task.description)}</p>` : '';
 
   return `
-    <div class="card task-card mb-2" draggable="true" data-id="${task._id}">
+    <div class="card task-card prio-${task.priority} mb-2" draggable="true" data-id="${task._id}">
       <div class="card-body p-3">
         <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
           <h6 class="mb-0">${esc(task.title)}</h6>
           <span class="badge text-bg-${PRIORITY_COLORS[task.priority]}">${PRIORITY_LABELS[task.priority]}</span>
         </div>
         ${description}
-        <div class="small text-muted mb-2"><i class="bi bi-person"></i> ${assignee}${dueDate}</div>
+        <div class="task-meta mb-2"><span>${assignee}</span>${dueDate}</div>
         <div class="d-flex gap-2">
           <select class="form-select form-select-sm status-select" data-id="${task._id}">${statusOptions}</select>
           <button class="btn btn-sm btn-outline-secondary edit-task" data-id="${task._id}"><i class="bi bi-pencil"></i></button>
@@ -240,7 +257,7 @@ function renderBoard() {
     document.getElementById('count-' + status).textContent = columnTasks.length;
     document.getElementById('col-' + status).innerHTML = columnTasks.length > 0
       ? columnTasks.map(taskCard).join('')
-      : '<p class="text-muted small mb-0">Nessun task</p>';
+      : '<div class="empty-state"><i class="bi bi-inbox"></i>Nessun task</div>';
   });
 }
 
@@ -370,7 +387,7 @@ function addMessage(message) {
   const mine = message.user._id === me.id;
   chatBox.insertAdjacentHTML('beforeend', `
     <div class="chat-message ${mine ? 'mine' : ''}" id="msg-${message._id}">
-      <div class="chat-author">${esc(message.user.name)} <span class="chat-time">${formatTime(message.createdAt)}</span></div>
+      <div class="chat-author">${mine ? '' : avatar(message.user.name, 'avatar-sm')} ${esc(message.user.name)} <span class="chat-time">${formatTime(message.createdAt)}</span></div>
       <div>${esc(message.message)}</div>
     </div>`);
   chatBox.scrollTop = chatBox.scrollHeight;

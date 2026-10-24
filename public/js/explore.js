@@ -14,7 +14,7 @@ async function loadProjects() {
   const container = document.getElementById('projects');
   container.innerHTML = projects.length > 0
     ? projects.map(projectCard).join('')
-    : '<p class="text-muted">Nessun progetto trovato con questi filtri.</p>';
+    : '<div class="col-12"><div class="empty-state"><i class="bi bi-search"></i>Nessun progetto trovato con questi filtri.</div></div>';
 }
 
 document.getElementById('filterForm').addEventListener('submit', (event) => {
