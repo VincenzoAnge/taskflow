@@ -14,6 +14,11 @@ app.set('io', setupSocket(server));
 
 app.use(cors());
 app.use(express.json());
+// in Express 5 req.body è undefined se la richiesta non ha un body JSON
+app.use((req, res, next) => {
+  req.body = req.body || {};
+  next();
+});
 app.use(express.static('public'));
 
 app.use('/api/auth', require('./src/routes/authRoutes'));

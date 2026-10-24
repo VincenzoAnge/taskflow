@@ -34,10 +34,10 @@ async function getPublicProjects(req, res) {
   const filter = { visibility: 'public', archived: false };
 
   if (category) {
-    filter.category = category;
+    filter.category = String(category);
   }
   if (technology) {
-    filter.technologies = technology.trim().toLowerCase();
+    filter.technologies = String(technology).trim().toLowerCase();
   }
 
   const projects = await Project.find(filter)
@@ -92,7 +92,7 @@ async function toggleArchive(req, res) {
 
 async function addMember(req, res) {
   const { email } = req.body;
-  if (!email) {
+  if (!email || typeof email !== 'string') {
     throw new AppError('Email obbligatoria', 400);
   }
 

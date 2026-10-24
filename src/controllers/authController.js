@@ -17,6 +17,9 @@ async function register(req, res) {
   if (!name || !email || !password) {
     throw new AppError('Nome, email e password sono obbligatori', 400);
   }
+  if (typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+    throw new AppError('Dati non validi', 400);
+  }
   if (password.length < 6) {
     throw new AppError('La password deve avere almeno 6 caratteri', 400);
   }
@@ -38,6 +41,9 @@ async function login(req, res) {
 
   if (!email || !password) {
     throw new AppError('Email e password sono obbligatorie', 400);
+  }
+  if (typeof email !== 'string' || typeof password !== 'string') {
+    throw new AppError('Dati non validi', 400);
   }
 
   const user = await User.findOne({ email: email.toLowerCase() }).select('+password');

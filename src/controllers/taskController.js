@@ -88,6 +88,9 @@ async function updateTask(req, res) {
 }
 
 async function changeStatus(req, res) {
+  if (!req.body.status) {
+    throw new AppError('Lo stato è obbligatorio', 400);
+  }
   const task = await findTask(req);
 
   task.status = req.body.status;

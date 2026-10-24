@@ -82,6 +82,19 @@ describe('TaskFlow', () => {
       assert.equal(result.status, 400);
     });
 
+    it('risponde 400 (non 500) a richieste senza body o con dati di tipo sbagliato', async () => {
+      assert.equal((await call('POST', '/auth/login')).status, 400);
+      assert.equal((await call('POST', '/auth/login', { email: 123, password: 'x' })).status, 400);
+      assert.equal((await call('POST', '/auth/login', { email: anna.email, password: 123456 })).status, 400);
+      assert.equal((await call('POST', '/auth/login', { email: ['a'], password: 'x' })).status, 400);
+      assert.equal((await call('POST', '/auth/register', { name: { a: 1 }, email: 'a@a.it', password: 'secret123' })).status, 400);
+    });
+
+    it('accetta l\'email scritta con maiuscole e spazi', async () => {
+      const result = await call('POST', '/auth/login', { email: `  ${anna.email.toUpperCase()} `, password: 'secret123' });
+      assert.equal(result.status, 200);
+    });
+
     it('rifiuta un login con password sbagliata', async () => {
       const result = await call('POST', '/auth/login', { email: anna.email, password: 'sbagliata' });
       assert.equal(result.status, 401);
@@ -201,6 +214,12 @@ describe('TaskFlow', () => {
 
       const ko = await call('PATCH', `/projects/${projectId}/tasks/${taskId}/status`, { status: 'boh' }, bruno.token);
       assert.equal(ko.status, 400);
+
+      const empty = await call('PATCH', `/projects/${projectId}/tasks/${taskId}/status`, null, bruno.token);
+      assert.equal(empty.status, 400);
+
+      const check = await call('GET', `/projects/${projectId}/tasks`, null, bruno.token);
+      assert.equal(check.data[0].status, 'doing');
     });
 
     it('modifica un task e lo elenca', async () => {
@@ -246,6 +265,9 @@ describe('TaskFlow', () => {
 
       const none = await call('GET', '/projects/public?technology=tecnologia-inventata');
       assert.equal(none.data.length, 0);
+
+      const repeated = await call('GET', '/projects/public?technology=node&technology=mongo');
+      assert.equal(repeated.status, 200);
 
       await call('PATCH', `/projects/${projectId}/archive`, null, anna.token);
       const afterArchive = await call('GET', '/projects/public?category=Web');
