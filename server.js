@@ -11,6 +11,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 app.use('/api/auth', require('./src/routes/authRoutes'));
+app.use('/api/projects', require('./src/routes/projectRoutes'));
 
 app.use('/api', notFound);
 app.use(errorHandler);
