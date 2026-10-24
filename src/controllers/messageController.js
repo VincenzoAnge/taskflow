@@ -4,7 +4,7 @@ const Message = require('../models/Message');
 async function getMessages(req, res) {
   const messages = await Message.find({ project: req.project._id })
     .populate('user', 'name')
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: -1, _id: -1 })
     .limit(50);
 
   res.json({ success: true, data: messages.reverse() });

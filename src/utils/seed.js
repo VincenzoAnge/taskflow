@@ -13,6 +13,10 @@ function daysFromNow(days) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 }
 
+function minutesAgo(minutes) {
+  return new Date(Date.now() - minutes * 60 * 1000);
+}
+
 async function seed() {
   if (process.env.NODE_ENV === 'production') {
     console.error('Il seed non può essere eseguito in produzione');
@@ -95,9 +99,9 @@ async function seed() {
   ]);
 
   await Message.create([
-    { project: portfolio._id, user: mario._id, message: 'Ciao Giulia, ho iniziato la sezione "Chi sono".' },
-    { project: portfolio._id, user: giulia._id, message: 'Perfetto! Io finisco la grafica della home entro domani.' },
-    { project: portfolio._id, user: mario._id, message: 'Ottimo, poi ci dividiamo la parte responsive.' }
+    { project: portfolio._id, user: mario._id, message: 'Ciao Giulia, ho iniziato la sezione "Chi sono".', createdAt: minutesAgo(30) },
+    { project: portfolio._id, user: giulia._id, message: 'Perfetto! Io finisco la grafica della home entro domani.', createdAt: minutesAgo(20) },
+    { project: portfolio._id, user: mario._id, message: 'Ottimo, poi ci dividiamo la parte responsive.', createdAt: minutesAgo(10) }
   ]);
 
   console.log('Dati demo inseriti.');
