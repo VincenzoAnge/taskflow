@@ -1,6 +1,6 @@
 # TaskFlow
 
-Progetto d'esame del corso Node.js (ITS Academy ICT Piemonte): una piattaforma collaborativa per gestire progetti e task, con board Kanban, chat di progetto e aggiornamenti in tempo reale.
+Progetto di studio del modulo Node.js (ITS Academy ICT Piemonte): una piattaforma collaborativa per gestire progetti e task, con board Kanban, chat di progetto e aggiornamenti in tempo reale.
 
 ![Board Kanban con chat e membri del progetto](docs/screenshots/board.webp)
 
