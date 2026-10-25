@@ -1,3 +1,5 @@
+// Pagina di un progetto: intestazione, board Kanban, chat e membri.
+// Le parti in tempo reale (chat e aggiornamenti dei task) usano Socket.IO.
 requireLogin();
 renderNavbar();
 
@@ -7,17 +9,16 @@ if (!projectId) {
 }
 
 const me = getUser();
-let project = null;
-let tasks = [];
+let project = null; // dati del progetto ricevuti dal server
+let tasks = [];     // task del progetto
 let socket = null;
-let unread = 0;
 
 const taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
 const editProjectModal = new bootstrap.Modal(document.getElementById('editProjectModal'));
 const board = document.getElementById('board');
 const chatBox = document.getElementById('chatBox');
 
-// Il pulsante veloce di ogni card porta il task allo stato successivo
+// Il pulsante di ogni card porta il task allo stato successivo
 const NEXT_STEP = {
   todo: { status: 'doing', label: 'Inizia', icon: 'bi-play-fill' },
   doing: { status: 'done', label: 'Completa', icon: 'bi-check-lg' },
@@ -26,17 +27,15 @@ const NEXT_STEP = {
 
 fillCategorySelect(document.getElementById('editCategory'));
 
-// ---------- Progetto ----------
+// ---------- Caricamento iniziale ----------
 
 async function loadProject() {
   project = await api('/projects/' + projectId);
   renderHeader();
 
+  // chi non è membro vede solo l'intestazione (e il pulsante "Partecipa" se il progetto è pubblico)
   if (!project.isMember) {
     document.getElementById('guestArea').classList.remove('d-none');
-    if (project.visibility === 'private' || project.archived) {
-      document.getElementById('guestText').textContent = 'Questo progetto non accetta nuovi membri.';
-    }
     return;
   }
 
@@ -47,78 +46,51 @@ async function loadProject() {
   connectSocket();
 }
 
+// ---------- Intestazione e azioni sul progetto ----------
+
 function renderHeader() {
   document.title = project.title + ' - TaskFlow';
   document.getElementById('projectHeader').classList.remove('d-none');
+  document.getElementById('projectCover').innerHTML = projectCover(project);
   document.getElementById('projectTitle').textContent = project.title;
   document.getElementById('projectDescription').textContent = project.description || 'Nessuna descrizione';
 
-  const style = coverStyle(project.category);
-  const banner = document.getElementById('projectBanner');
-  banner.style.background = style.gradient;
-  banner.innerHTML = `<span class="cover-icon"><i class="bi ${style.icon}"></i></span>` +
-    (project.coverImage ? `<img src="${esc(project.coverImage)}" alt="" onerror="this.remove()">` : '');
-
   const visibility = project.visibility === 'private'
-    ? '<span class="badge text-bg-dark"><i class="bi bi-lock-fill"></i> Privato</span>'
-    : '<span class="badge bg-success-subtle text-success-emphasis"><i class="bi bi-globe"></i> Pubblico</span>';
-  const archived = project.archived ? ' <span class="badge text-bg-warning"><i class="bi bi-archive"></i> Archiviato</span>' : '';
-  document.getElementById('projectBadges').innerHTML =
-    `<span class="badge bg-primary-subtle text-primary-emphasis">${esc(project.category)}</span> ${visibility}${archived}`;
+    ? badge('secondary', '<i class="bi bi-lock"></i> Privato')
+    : badge('success', '<i class="bi bi-globe"></i> Pubblico');
+  const archived = project.archived ? badge('warning', 'Archiviato') : '';
+  document.getElementById('projectBadges').innerHTML = `${badge('primary', esc(project.category))} ${visibility} ${archived}`;
 
   document.getElementById('projectTechnologies').innerHTML = project.technologies
-    .map((t) => `<span class="badge tech-badge">${esc(t)}</span>`)
-    .join(' ');
-
+    .map((t) => `<span class="tech">${esc(t)}</span>`)
+    .join('');
   document.getElementById('projectOwner').innerHTML =
-    `${avatar(project.owner.name, 'avatar-sm')} Creato da <strong>${esc(project.owner.name)}</strong> il ${formatDate(project.createdAt)}`;
-
-  // al massimo 5 avatar, poi "+N"
-  const others = project.members.length - 5;
-  document.getElementById('projectMembers').innerHTML =
-    project.members.slice(0, 5).map((m) => avatar(m.name)).join('') +
-    (others > 0 ? `<span class="avatar" style="background:#cbd5e1;color:#334155">+${others}</span>` : '');
+    `${avatar(project.owner.name, 'avatar-sm')} Creato da ${esc(project.owner.name)} il ${formatDate(project.createdAt)}`;
 
   renderActions();
 }
 
+// I pulsanti cambiano in base al ruolo: proprietario, membro o visitatore
 function renderActions() {
   const actions = document.getElementById('projectActions');
 
   if (project.isOwner) {
     actions.innerHTML = `
-      <button class="btn btn-outline-secondary" id="editProjectBtn"><i class="bi bi-pencil"></i> Modifica</button>
-      <div class="dropdown">
-        <button class="btn btn-outline-secondary" data-bs-toggle="dropdown" id="projectMenuBtn" aria-label="Altre azioni">
-          <i class="bi bi-three-dots"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li><button class="dropdown-item" id="archiveBtn">
-            <i class="bi bi-archive"></i> ${project.archived ? 'Ripristina progetto' : 'Archivia progetto'}
-          </button></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><button class="dropdown-item text-danger" id="deleteProjectBtn"><i class="bi bi-trash"></i> Elimina progetto</button></li>
-        </ul>
-      </div>`;
+      <button class="btn btn-outline-secondary btn-sm" id="editProjectBtn"><i class="bi bi-pencil"></i> Modifica</button>
+      <button class="btn btn-outline-secondary btn-sm" id="archiveBtn">
+        <i class="bi bi-archive"></i> ${project.archived ? 'Ripristina' : 'Archivia'}
+      </button>
+      <button class="btn btn-outline-danger btn-sm" id="deleteProjectBtn"><i class="bi bi-trash"></i> Elimina</button>`;
     document.getElementById('editProjectBtn').addEventListener('click', openEditProject);
     document.getElementById('archiveBtn').addEventListener('click', toggleArchive);
     document.getElementById('deleteProjectBtn').addEventListener('click', deleteProject);
   } else if (project.isMember) {
-    actions.innerHTML = '<button class="btn btn-outline-danger" id="leaveBtn"><i class="bi bi-box-arrow-left"></i> Lascia il progetto</button>';
+    actions.innerHTML = '<button class="btn btn-outline-danger btn-sm" id="leaveBtn"><i class="bi bi-box-arrow-left"></i> Lascia il progetto</button>';
     document.getElementById('leaveBtn').addEventListener('click', leaveProject);
   } else if (project.visibility === 'public' && !project.archived) {
-    actions.innerHTML = '<button class="btn btn-primary btn-lg" id="joinBtn"><i class="bi bi-box-arrow-in-right"></i> Partecipa al progetto</button>';
+    actions.innerHTML = '<button class="btn btn-primary" id="joinBtn"><i class="bi bi-box-arrow-in-right"></i> Partecipa al progetto</button>';
     document.getElementById('joinBtn').addEventListener('click', joinProject);
   }
-}
-
-function renderProgress() {
-  const done = tasks.filter((t) => t.status === 'done').length;
-  const percent = tasks.length > 0 ? Math.round((done / tasks.length) * 100) : 0;
-
-  document.getElementById('progressBox').classList.remove('d-none');
-  document.getElementById('progressText').textContent = `${done} di ${tasks.length} task completati (${percent}%)`;
-  document.getElementById('progressBar').style.width = percent + '%';
 }
 
 function openEditProject() {
@@ -193,30 +165,27 @@ async function leaveProject() {
 // ---------- Membri ----------
 
 function renderMembers() {
-  document.getElementById('membersCount').textContent = project.members.length;
-
   document.getElementById('membersList').innerHTML = project.members.map((member) => {
     const isOwner = member._id === project.owner._id;
     const removeButton = project.isOwner && !isOwner
-      ? `<button class="btn btn-sm btn-outline-danger remove-member" data-id="${member._id}"><i class="bi bi-person-dash"></i> Rimuovi</button>`
+      ? `<button class="btn btn-sm btn-outline-danger remove-member" data-id="${member._id}" title="Rimuovi"><i class="bi bi-x-lg"></i></button>`
       : '';
-    const openTasks = tasks.filter((t) => t.assignee && t.assignee._id === member._id && t.status !== 'done').length;
 
     return `
-      <li class="list-group-item d-flex justify-content-between align-items-center gap-2 py-3">
-        <div class="d-flex align-items-center gap-3">
-          ${avatar(member.name, 'avatar-lg')}
+      <li class="list-group-item d-flex justify-content-between align-items-center gap-2 px-0">
+        <div class="d-flex align-items-center gap-2">
+          ${avatar(member.name)}
           <div>
-            <div class="fw-semibold">${esc(member.name)}
-              ${isOwner ? '<span class="badge bg-primary-subtle text-primary-emphasis">Proprietario</span>' : ''}</div>
-            <div class="small text-muted">${esc(member.email)} &middot; ${openTasks} task aperti</div>
+            <div class="fw-semibold">${esc(member.name)} ${isOwner ? badge('primary', 'Proprietario') : ''}</div>
+            <div class="small text-secondary">${esc(member.email)}</div>
           </div>
         </div>
         ${removeButton}
       </li>`;
   }).join('');
 
-  document.getElementById('memberFormCard').classList.toggle('d-none', !project.isOwner);
+  // solo il proprietario vede il form per aggiungere membri
+  document.getElementById('memberForm').classList.toggle('d-none', !project.isOwner);
 }
 
 document.getElementById('membersList').addEventListener('click', async (event) => {
@@ -226,8 +195,8 @@ document.getElementById('membersList').addEventListener('click', async (event) =
   }
   try {
     project.members = await api(`/projects/${projectId}/members/${button.dataset.id}`, 'DELETE');
+    renderMembers();
     await loadTasks();
-    renderHeader();
   } catch (err) {
     showToast(err.message, 'danger');
   }
@@ -241,78 +210,54 @@ document.getElementById('memberForm').addEventListener('submit', async (event) =
     });
     document.getElementById('memberEmail').value = '';
     renderMembers();
-    renderHeader();
-    showToast('Membro aggiunto', 'success');
   } catch (err) {
     showToast(err.message, 'danger');
   }
 });
 
-// ---------- Task e board Kanban ----------
+// ---------- Board Kanban ----------
 
 async function loadTasks() {
   tasks = await api(`/projects/${projectId}/tasks`);
   renderBoard();
-  renderProgress();
-  renderMembers();
 }
 
 function taskCard(task) {
   const next = NEXT_STEP[task.status];
   const assignee = task.assignee
-    ? `${avatar(task.assignee.name, 'avatar-sm')} ${esc(task.assignee.name)}`
-    : '<span class="text-muted"><i class="bi bi-person-dash"></i> Nessuno</span>';
-  const description = task.description ? `<p class="small text-muted mb-2 line-clamp-2">${esc(task.description)}</p>` : '';
+    ? `<span class="d-flex align-items-center gap-1">${avatar(task.assignee.name, 'avatar-sm')} ${esc(task.assignee.name)}</span>`
+    : '<span><i class="bi bi-person"></i> Nessuno</span>';
+  const description = task.description
+    ? `<p class="small text-secondary mb-2 line-clamp-2">${esc(task.description)}</p>`
+    : '';
 
   return `
-    <div class="card task-card prio-${task.priority} mb-2" draggable="true" data-id="${task._id}">
+    <div class="card task-card" draggable="true" data-id="${task._id}">
       <div class="card-body p-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge prio-badge">${PRIORITY_LABELS[task.priority]}</span>
-          <div class="dropdown">
-            <button class="btn btn-sm btn-icon" data-bs-toggle="dropdown" aria-label="Azioni"><i class="bi bi-three-dots"></i></button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><button class="dropdown-item edit-task" data-id="${task._id}"><i class="bi bi-pencil"></i> Modifica</button></li>
-              <li><button class="dropdown-item text-danger delete-task" data-id="${task._id}"><i class="bi bi-trash"></i> Elimina</button></li>
-            </ul>
-          </div>
-        </div>
-        <h6 class="mb-1">${esc(task.title)}</h6>
+        <div class="mb-2">${badge(PRIORITY_COLORS[task.priority], 'Priorità ' + PRIORITY_LABELS[task.priority].toLowerCase())}</div>
+        <h6>${esc(task.title)}</h6>
         ${description}
-        <div class="task-meta mb-3"><span>${assignee}</span>${dueLabel(task)}</div>
-        <button class="btn btn-sm btn-light w-100 move-task" data-id="${task._id}" data-status="${next.status}">
-          <i class="bi ${next.icon}"></i> ${next.label}
-        </button>
+        <div class="task-meta mb-3">${assignee} ${dueDate(task)}</div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary flex-grow-1 move-task" data-id="${task._id}" data-status="${next.status}">
+            <i class="bi ${next.icon}"></i> ${next.label}
+          </button>
+          <button class="btn btn-sm btn-outline-secondary edit-task" data-id="${task._id}" title="Modifica"><i class="bi bi-pencil"></i></button>
+        </div>
       </div>
     </div>`;
 }
 
-// Ricerca per titolo e filtro "solo i miei task" (fatti nel browser, senza chiamare il server)
-function visibleTasks() {
-  const search = document.getElementById('taskSearch').value.trim().toLowerCase();
-  const onlyMine = document.getElementById('onlyMine').checked;
-
-  return tasks.filter((task) => {
-    const matchesSearch = task.title.toLowerCase().includes(search);
-    const isMine = task.assignee && task.assignee._id === me.id;
-    return matchesSearch && (!onlyMine || isMine);
-  });
-}
-
+// Divide i task nelle tre colonne in base allo stato
 function renderBoard() {
-  const shown = visibleTasks();
-
   Object.keys(STATUS_LABELS).forEach((status) => {
-    const columnTasks = shown.filter((task) => task.status === status);
+    const columnTasks = tasks.filter((task) => task.status === status);
     document.getElementById('count-' + status).textContent = columnTasks.length;
     document.getElementById('col-' + status).innerHTML = columnTasks.length > 0
       ? columnTasks.map(taskCard).join('')
-      : '<div class="empty-state mb-2"><i class="bi bi-inbox"></i>Nessun task</div>';
+      : emptyState('bi-inbox', 'Nessun task');
   });
 }
-
-document.getElementById('taskSearch').addEventListener('input', renderBoard);
-document.getElementById('onlyMine').addEventListener('change', renderBoard);
 
 async function changeStatus(taskId, status) {
   try {
@@ -323,22 +268,8 @@ async function changeStatus(taskId, status) {
   await loadTasks();
 }
 
-async function deleteTask(taskId) {
-  if (!confirm('Eliminare questo task?')) {
-    return false;
-  }
-  try {
-    await api(`/projects/${projectId}/tasks/${taskId}`, 'DELETE');
-    await loadTasks();
-    return true;
-  } catch (err) {
-    showToast(err.message, 'danger');
-    return false;
-  }
-}
-
-// Apre il modal vuoto (nuovo task, nella colonna indicata) oppure precompilato (modifica)
-function openTaskModal(taskId, status = 'todo') {
+// Apre la finestra del task: vuota per un nuovo task, già compilata per una modifica
+function openTaskModal(taskId) {
   const task = tasks.find((t) => t._id === taskId);
 
   document.getElementById('taskModalTitle').textContent = task ? 'Modifica task' : 'Nuovo task';
@@ -346,10 +277,11 @@ function openTaskModal(taskId, status = 'todo') {
   document.getElementById('taskTitle').value = task ? task.title : '';
   document.getElementById('taskDescription').value = task ? task.description : '';
   document.getElementById('taskPriority').value = task ? task.priority : 'medium';
-  document.getElementById('taskStatus').value = task ? task.status : status;
+  document.getElementById('taskStatus').value = task ? task.status : 'todo';
   document.getElementById('taskDueDate').value = task && task.dueDate ? task.dueDate.slice(0, 10) : '';
   document.getElementById('deleteTaskBtn').classList.toggle('d-none', !task);
 
+  // si può assegnare un task solo a un membro del progetto
   const assigneeSelect = document.getElementById('taskAssignee');
   assigneeSelect.innerHTML = '<option value="">Nessuno</option>' +
     project.members.map((m) => `<option value="${m._id}">${esc(m.name)}</option>`).join('');
@@ -359,16 +291,6 @@ function openTaskModal(taskId, status = 'todo') {
 }
 
 document.getElementById('newTaskBtn').addEventListener('click', () => openTaskModal(null));
-
-document.getElementById('taskModal').addEventListener('shown.bs.modal', () => {
-  document.getElementById('taskTitle').focus();
-});
-
-document.getElementById('deleteTaskBtn').addEventListener('click', async () => {
-  if (await deleteTask(document.getElementById('taskId').value)) {
-    taskModal.hide();
-  }
-});
 
 document.getElementById('taskForm').addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -386,7 +308,7 @@ document.getElementById('taskForm').addEventListener('submit', async (event) => 
   try {
     if (taskId) {
       await api(`/projects/${projectId}/tasks/${taskId}`, 'PUT', body);
-      // lo stato ha un endpoint dedicato
+      // lo stato si cambia con il suo endpoint dedicato, solo se è diverso
       const oldTask = tasks.find((t) => t._id === taskId);
       if (oldTask.status !== status) {
         await api(`/projects/${projectId}/tasks/${taskId}/status`, 'PATCH', { status });
@@ -401,28 +323,32 @@ document.getElementById('taskForm').addEventListener('submit', async (event) => 
   }
 });
 
-board.addEventListener('click', (event) => {
-  const addButton = event.target.closest('.add-task-btn');
-  const moveButton = event.target.closest('.move-task');
-  const editButton = event.target.closest('.edit-task');
-  const deleteButton = event.target.closest('.delete-task');
-  const card = event.target.closest('.task-card');
-
-  if (addButton) {
-    openTaskModal(null, addButton.dataset.status);
-  } else if (moveButton) {
-    changeStatus(moveButton.dataset.id, moveButton.dataset.status);
-  } else if (editButton) {
-    openTaskModal(editButton.dataset.id);
-  } else if (deleteButton) {
-    deleteTask(deleteButton.dataset.id);
-  } else if (card && !event.target.closest('.dropdown')) {
-    // click sul resto della card = apri i dettagli
-    openTaskModal(card.dataset.id);
+document.getElementById('deleteTaskBtn').addEventListener('click', async () => {
+  if (!confirm('Eliminare questo task?')) {
+    return;
+  }
+  try {
+    await api(`/projects/${projectId}/tasks/${document.getElementById('taskId').value}`, 'DELETE');
+    taskModal.hide();
+    await loadTasks();
+  } catch (err) {
+    showToast(err.message, 'danger');
   }
 });
 
-// Drag and drop: si trascina la card e si rilascia su una colonna
+// Un solo listener per tutti i pulsanti delle card (le card vengono ricreate a ogni aggiornamento)
+board.addEventListener('click', (event) => {
+  const moveButton = event.target.closest('.move-task');
+  const editButton = event.target.closest('.edit-task');
+
+  if (moveButton) {
+    changeStatus(moveButton.dataset.id, moveButton.dataset.status);
+  } else if (editButton) {
+    openTaskModal(editButton.dataset.id);
+  }
+});
+
+// Drag and drop: si trascina una card e la si rilascia su un'altra colonna
 let draggedTaskId = null;
 
 board.addEventListener('dragstart', (event) => {
@@ -452,53 +378,25 @@ document.querySelectorAll('.kanban-column').forEach((column) => {
 
 async function loadMessages() {
   const messages = await api(`/projects/${projectId}/messages`);
-  chatBox.innerHTML = messages.length > 0
-    ? ''
-    : '<div class="empty-state" id="chatEmpty"><i class="bi bi-chat-heart"></i>Nessun messaggio, scrivi tu il primo!</div>';
+  chatBox.innerHTML = '';
   messages.forEach(addMessage);
 }
 
 function addMessage(message) {
+  // lo stesso messaggio non va mostrato due volte
   if (document.getElementById('msg-' + message._id)) {
     return;
   }
-  const empty = document.getElementById('chatEmpty');
-  if (empty) {
-    empty.remove();
-  }
-
   const mine = message.user._id === me.id;
   chatBox.insertAdjacentHTML('beforeend', `
     <div class="chat-message ${mine ? 'mine' : ''}" id="msg-${message._id}">
-      <div class="chat-author">${mine ? '' : avatar(message.user.name, 'avatar-sm')} ${esc(message.user.name)} <span class="chat-time">${formatTime(message.createdAt)}</span></div>
+      <div class="chat-author">${esc(message.user.name)} · ${formatTime(message.createdAt)}</div>
       <div>${esc(message.message)}</div>
     </div>`);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function isChatOpen() {
-  return document.getElementById('chatTab').classList.contains('active');
-}
-
-// Messaggio arrivato in tempo reale: se la chat non è aperta si aggiorna il contatore
-function receiveMessage(message) {
-  addMessage(message);
-  if (!isChatOpen() && message.user._id !== me.id) {
-    unread++;
-    const badge = document.getElementById('unreadBadge');
-    badge.textContent = unread;
-    badge.classList.remove('d-none');
-    showToast(`${message.user.name}: ${message.message}`);
-  }
-}
-
-document.getElementById('chatTabBtn').addEventListener('shown.bs.tab', () => {
-  unread = 0;
-  document.getElementById('unreadBadge').classList.add('d-none');
-  chatBox.scrollTop = chatBox.scrollHeight;
-  document.getElementById('chatInput').focus();
-});
-
+// Il messaggio non viene salvato con fetch: lo invia Socket.IO, il server lo salva e lo manda a tutti
 document.getElementById('chatForm').addEventListener('submit', (event) => {
   event.preventDefault();
   const input = document.getElementById('chatInput');
@@ -512,7 +410,7 @@ document.getElementById('chatForm').addEventListener('submit', (event) => {
 
 // ---------- Socket.IO ----------
 
-// Cosa mostrare nel toast per ogni evento che arriva dal server
+// Testo del toast per ogni evento sui task che arriva dal server
 const taskEvents = {
   taskCreated: (task) => `ha creato il task "${task.title}"`,
   taskUpdated: (task) => `ha modificato il task "${task.title}"`,
@@ -524,15 +422,16 @@ const taskEvents = {
 function connectSocket() {
   socket = io({ auth: { token: getToken() } });
 
-  // a ogni (ri)connessione si entra di nuovo nella stanza del progetto
+  // a ogni connessione (anche dopo una riconnessione) si entra nella stanza del progetto
   socket.on('connect', () => socket.emit('joinProject', projectId));
   socket.on('connect_error', () => showToast('Connessione in tempo reale non riuscita', 'danger'));
   socket.on('errorMessage', (message) => showToast(message, 'danger'));
-  socket.on('newMessage', receiveMessage);
+  socket.on('newMessage', addMessage);
 
   Object.keys(taskEvents).forEach((eventName) => {
     socket.on(eventName, (data) => {
       loadTasks();
+      // il toast lo vedono solo gli altri membri, non chi ha fatto la modifica
       if (data.by.id !== me.id) {
         showToast(`${data.by.name} ${taskEvents[eventName](data.task)}`);
       }
