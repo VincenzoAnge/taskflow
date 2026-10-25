@@ -12,7 +12,7 @@ I dati nelle immagini sono quelli demo creati da `npm run seed`.
 
 ## Come è stato sviluppato
 
-Il codice è stato scritto con l'aiuto di un assistente AI. Lo uso per studiare Node.js, Express e MongoDB: la guida [docs/STUDY_GUIDE.md](docs/STUDY_GUIDE.md) spiega come funziona ogni parte (JWT, middleware, Mongoose, Socket.IO) e indica i file da leggere.
+Il progetto è stato sviluppato con un assistente AI, uso consentito dal corso. Lo uso per studiare Node.js, Express e MongoDB: la guida [docs/STUDY_GUIDE.md](docs/STUDY_GUIDE.md) spiega come funziona ogni parte (JWT, middleware, Mongoose, Socket.IO) e indica i file da leggere.
 
 ## Funzionalità
 
