@@ -13,13 +13,13 @@ Ogni utente può registrarsi, creare progetti, invitare altre persone e organizz
 - Creazione, modifica, archiviazione ed eliminazione dei progetti (solo il proprietario)
 - Gestione dei membri: il proprietario aggiunge e rimuove, chiunque può entrare in un progetto pubblico
 - Task con titolo, descrizione, assegnatario, scadenza e priorità
-- Board Kanban: stato cambiato con il pulsante della card (Inizia / Completa / Riapri), trascinando la card o dalla finestra del task
-- Pagina progetto divisa in schede (Board, Chat, Membri), barra di avanzamento, ricerca e filtro "solo i miei task"
-- Dashboard personale con riepilogo, task ordinati per scadenza e spunta veloce per completarli
-- Pagina "Esplora progetti" con ricerca, filtri per categoria e tecnologia e ordinamento per data (si aggiornano da soli)
+- Board Kanban a tre colonne: lo stato si cambia con il pulsante della card (Inizia / Completa / Riapri), trascinando la card oppure dalla finestra del task
+- Dashboard personale con card riepilogative, progetti creati, progetti a cui si partecipa e task ordinati per scadenza
+- Pagina "Esplora progetti" con filtri per categoria e tecnologia e ordinamento per data
 - Chat realtime per ogni progetto (solo membri) con Socket.IO
 - Notifiche (toast) quando un task viene creato, modificato, spostato, assegnato o eliminato
-- Pannello admin: riepilogo, ricerca, blocco/sblocco utenti, archiviazione progetti
+- Pannello admin: elenco utenti con blocco/sblocco, elenco progetti con archiviazione
+- Interfaccia con tema scuro (dark mode di Bootstrap 5.3) e responsive
 - Gestione centralizzata degli errori e risposte JSON sempre nello stesso formato
 
 ## Tecnologie
@@ -30,7 +30,7 @@ Ogni utente può registrarsi, creare progetti, invitare altre persone e organizz
 | Sicurezza | jsonwebtoken (JWT), bcrypt, cors |
 | Realtime | Socket.IO |
 | Configurazione | dotenv |
-| Frontend | HTML, CSS, JavaScript semplice, Bootstrap 5, Bootstrap Icons |
+| Frontend | HTML, CSS, JavaScript semplice, Bootstrap 5.3 (tema scuro), Bootstrap Icons |
 
 ## Installazione
 
@@ -70,23 +70,58 @@ In alternativa `npm start` avvia il server senza riavvio automatico. Poi apri ht
 
 ```
 taskflow-nodejs/
-├── server.js              avvio di Express, Socket.IO e database
+├── server.js                    avvio: Express, Socket.IO, route e connessione al database
 ├── package.json
-├── .env.example           esempio di configurazione
+├── .env.example                 esempio di configurazione (il vero .env non è su Git)
 ├── src/
-│   ├── config/            connessione a MongoDB
-│   ├── models/            User, Project, Task, Message (Mongoose)
-│   ├── routes/            quali URL esistono e quali middleware usano
-│   ├── controllers/       la logica di ogni endpoint
-│   ├── middleware/        login, ruolo admin, ruolo nel progetto, errori
-│   ├── socket/            chat e stanze di Socket.IO
-│   └── utils/             AppError e script seed
-├── public/                frontend (HTML, css/, js/)
-├── tests/                 test automatici dei flussi principali
-├── docs/                  documentazione e collection Postman
-├── STUDY_GUIDE.md         guida per studiare il progetto
-└── FINAL_REPORT.md        riepilogo finale
+│   ├── config/
+│   │   └── db.js                connessione a MongoDB
+│   ├── models/                  schemi Mongoose
+│   │   ├── User.js
+│   │   ├── Project.js
+│   │   ├── Task.js
+│   │   └── Message.js
+│   ├── routes/                  quali URL esistono e quali middleware usano
+│   │   ├── authRoutes.js        /api/auth
+│   │   ├── userRoutes.js        /api/users
+│   │   ├── projectRoutes.js     /api/projects
+│   │   ├── taskRoutes.js        /api/projects/:id/tasks
+│   │   └── adminRoutes.js       /api/admin
+│   ├── controllers/             la logica di ogni endpoint
+│   │   ├── authController.js
+│   │   ├── userController.js
+│   │   ├── projectController.js
+│   │   ├── taskController.js
+│   │   ├── messageController.js
+│   │   └── adminController.js
+│   ├── middleware/
+│   │   ├── authMiddleware.js    login (protect) e ruolo admin (adminOnly)
+│   │   ├── projectMiddleware.js progetto dalla URL e permessi (membro, proprietario)
+│   │   └── errorMiddleware.js   404 e gestione centralizzata degli errori
+│   ├── socket/
+│   │   └── socketServer.js      Socket.IO: autenticazione, stanze, chat
+│   └── utils/
+│       ├── AppError.js          errore con codice HTTP
+│       └── seed.js              dati demo (npm run seed)
+├── public/                      frontend
+│   ├── index.html               home
+│   ├── login.html / register.html
+│   ├── dashboard.html
+│   ├── project.html             board, chat e membri
+│   ├── explore.html
+│   ├── admin.html
+│   ├── css/style.css            tema scuro e stili delle pagine
+│   └── js/
+│       ├── common.js            funzioni condivise (api, sessione, navbar, card)
+│       ├── auth.js              login e registrazione
+│       └── index.js, dashboard.js, project.js, explore.js, admin.js   uno per pagina
+├── tests/flows.test.js          test automatici dei flussi principali
+├── docs/                        documentazione e collection Postman
+├── STUDY_GUIDE.md               guida per studiare il progetto
+└── FINAL_REPORT.md              riepilogo finale
 ```
+
+Convenzioni sui nomi: nel backend ogni file dice cosa contiene (`xxxRoutes.js`, `xxxController.js`, `xxxMiddleware.js`), i modelli hanno l'iniziale maiuscola come le classi (`User.js`). Nel frontend ogni pagina `nome.html` ha il suo script `js/nome.js` (login e registrazione condividono `auth.js`).
 
 ## API principali
 

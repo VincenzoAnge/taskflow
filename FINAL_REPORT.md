@@ -20,10 +20,9 @@
 - [x] Creazione, modifica, eliminazione, assegnazione, scadenza e priorità
 - [x] Board Kanban a tre colonne: Da fare, In corso, Completato
 - [x] Cambio stato con pulsante veloce sulla card, con drag and drop e dalla finestra del task
-- [x] Pagina progetto a schede (Board, Chat, Membri), avanzamento, ricerca e filtro "solo i miei task"
 
 **Dashboard ed esplora**
-- [x] Dashboard con card riepilogative, progetti creati, progetti a cui si partecipa, task ordinati per scadenza con spunta veloce
+- [x] Dashboard con card riepilogative, progetti creati, progetti a cui si partecipa, task ordinati per scadenza
 - [x] Pagina "Esplora progetti" con filtro per categoria e tecnologia e ordinamento per data
 
 **Tempo reale (Socket.IO)**
@@ -39,7 +38,7 @@
 - [x] Middleware centralizzato per gli errori, risposte JSON uniformi, codici HTTP corretti
 - [x] Script `npm run seed` con dati demo
 - [x] Collection Postman completa
-- [x] README, API, DATABASE, ARCHITECTURE, SETUP, STUDY_GUIDE (con 36 domande d'esame)
+- [x] README, API, DATABASE, ARCHITECTURE, SETUP, STUDY_GUIDE (con 37 domande d'esame)
 - [x] 32 test automatici dei flussi principali
 - [x] Repository Git con commit progressivi
 
@@ -47,14 +46,14 @@
 
 ```
 server.js            avvio di Express, Socket.IO e database
-src/config/          connessione a MongoDB
+src/config/          db.js (connessione a MongoDB)
 src/models/          User, Project, Task, Message
-src/routes/          auth, users, projects, tasks, admin
-src/controllers/     la logica degli endpoint
-src/middleware/      auth (login e admin), project (membro e proprietario), errori
-src/socket/          autenticazione, stanze e chat
+src/routes/          authRoutes, userRoutes, projectRoutes, taskRoutes, adminRoutes
+src/controllers/     authController, userController, projectController, taskController, messageController, adminController
+src/middleware/      authMiddleware (login e admin), projectMiddleware (membro e proprietario), errorMiddleware (errori)
+src/socket/          socketServer.js (autenticazione, stanze e chat)
 src/utils/           AppError e seed
-public/              frontend: 7 pagine HTML, css/style.css, js/ (un file per pagina + common.js)
+public/              frontend: 7 pagine HTML, css/style.css (tema scuro), js/ (un file per pagina + common.js)
 tests/               test automatici
 docs/                documentazione e collection Postman
 ```
@@ -125,10 +124,10 @@ Apri http://localhost:3000.
 **A mano**
 
 1. Apri http://localhost:3000 e accedi come `mario@taskflow.dev`.
-2. Apri il progetto "Sito portfolio": in alto ci sono le schede Board, Chat e Membri.
+2. Apri il progetto "Sito portfolio": a sinistra c'è la board, a destra chat e membri.
 3. Apri una seconda finestra del browser (o una finestra in incognito) e accedi come `giulia@taskflow.dev`, nello stesso progetto.
 4. Da Mario crea un task, premi "Inizia" sulla card e poi trascinala in "Completato": nella finestra di Giulia la board si aggiorna e compare un toast.
-5. Scrivi in chat da una finestra: nell'altra, se la scheda Chat è chiusa, compare il contatore dei messaggi non letti.
+5. Scrivi in chat da una finestra e controlla che il messaggio arrivi subito nell'altra.
 6. Da "Esplora" prova i filtri e apri un progetto pubblico che non è tuo: puoi entrare con "Partecipa al progetto".
 7. Accedi come `admin@taskflow.dev`, apri "Admin", blocca Giulia e controlla che non possa più accedere.
 
@@ -171,7 +170,10 @@ Commit creati, in ordine:
 21. `c7d7a60` docs: update final report
 22. `7d0bda2` feat: reorganize project page with tabs, quick actions and board filters
 23. `3eb60d7` feat: improve dashboard, explore and admin usability
-24. docs: describe the new interface (ultimo commit)
+24. `dbf5eff` docs: describe the new interface
+25. `90827d5` refactor: consistent file names and comments in the backend
+26. `6ee7b72` feat: dark theme and simpler frontend limited to the required features
+27. docs: update documentation for the dark theme and the new file names (ultimo commit)
 
 Il file `.env` non è nel repository (è nel `.gitignore`): contiene solo `.env.example` senza segreti.
 
@@ -221,6 +223,6 @@ Funzioni volutamente semplificate rispetto a un prodotto reale:
 - Tutte le route provate con richieste reali (successo ed errori: 400, 401, 403, 404).
 - Permessi: utente non membro, non proprietario, non admin, utente bloccato.
 - Test automatici: 32 su 32 superati.
-- Interfaccia provata in un browser con due utenti collegati contemporaneamente: login e registrazione, dashboard, creazione di un progetto, board (creazione, modifica, cambio stato con pulsante e con drag and drop, aggiunta da colonna, ricerca, eliminazione), chat in tempo reale con contatore dei non letti, toast, esplora con filtri e ricerca, spunta veloce in dashboard, ricerca nel pannello admin, ingresso e uscita da un progetto, pannello admin, vista da telefono.
+- Interfaccia provata in un browser con due utenti collegati contemporaneamente: login e registrazione, dashboard, creazione ed eliminazione di un progetto, board (creazione, modifica, cambio stato con pulsante e con drag and drop, eliminazione), chat in tempo reale, toast, esplora con filtri e ordinamento, ingresso e uscita da un progetto, pannello admin, vista da telefono.
 - Prova da un clone pulito del repository: `npm install`, `.env`, `npm run seed`, avvio e test funzionano.
 - Ambiente di prova: Node.js 22 e MongoDB 7.

@@ -34,14 +34,14 @@ Richiesta: `PATCH /api/projects/65f.../tasks/66a.../status` con body `{ "status"
 
 ### Cosa succede se qualcosa va storto
 
-Qualunque errore (per esempio `throw new AppError('Task non trovato', 404)`) finisce nel **middleware degli errori** (`src/middleware/errorHandler.js`), registrato per ultimo in `server.js`. È l'unico punto che trasforma un errore in una risposta `{ success: false, message }` con il codice HTTP giusto. Express 5 inoltra da solo gli errori delle funzioni `async`, quindi nei controller non servono blocchi `try/catch`.
+Qualunque errore (per esempio `throw new AppError('Task non trovato', 404)`) finisce nel **middleware degli errori** (`src/middleware/errorMiddleware.js`), registrato per ultimo in `server.js`. È l'unico punto che trasforma un errore in una risposta `{ success: false, message }` con il codice HTTP giusto. Express 5 inoltra da solo gli errori delle funzioni `async`, quindi nei controller non servono blocchi `try/catch`.
 
 ## 2. Il percorso in tempo reale con Socket.IO
 
 ```
 Browser
    ↔  connessione Socket.IO (WebSocket), con il token JWT
-Server  (src/socket/index.js)
+Server  (src/socket/socketServer.js)
    ↔  stanza "project:<id>" con tutti gli utenti connessi a quel progetto
 ```
 
@@ -61,10 +61,10 @@ Le due parti sono collegate: `server.js` crea `io` e lo salva con `app.set('io',
 | `src/models/` | forma dei dati (User, Project, Task, Message) |
 | `src/routes/` | associa URL e metodi ai controller e ai middleware |
 | `src/controllers/` | auth, progetti, task, messaggi, dashboard, admin |
-| `src/middleware/auth.js` | `protect` (login obbligatorio) e `adminOnly` |
-| `src/middleware/project.js` | `loadProject`, `requireMember`, `requireOwner` |
-| `src/middleware/errorHandler.js` | route non trovata ed errori centralizzati |
-| `src/socket/index.js` | autenticazione, stanze, chat |
+| `src/middleware/authMiddleware.js` | `protect` (login obbligatorio) e `adminOnly` |
+| `src/middleware/projectMiddleware.js` | `loadProject`, `requireMember`, `requireOwner` |
+| `src/middleware/errorMiddleware.js` | route non trovata ed errori centralizzati |
+| `src/socket/socketServer.js` | autenticazione, stanze, chat |
 | `src/utils/AppError.js` | errore con codice HTTP |
 | `src/utils/seed.js` | dati demo |
 | `public/` | frontend: pagine HTML, `css/style.css`, `js/` |
@@ -76,6 +76,10 @@ Il frontend è fatto di pagine HTML statiche servite da Express (`express.static
 - `api()`: funzione che chiama le API aggiungendo il token JWT
 - gestione della sessione (token salvato nel `localStorage`)
 - navbar condivisa, toast, card dei progetti
+
+Ogni pagina `nome.html` ha il suo script `js/nome.js` (login e registrazione condividono `auth.js`).
+
+Il tema scuro è quello già incluso in Bootstrap 5.3: basta l'attributo `data-bs-theme="dark"` sul tag `<html>`. Il file `css/style.css` cambia solo alcuni colori (variabili CSS all'inizio del file) e aggiunge lo stile di board, chat e card.
 
 Il browser non ricarica mai tutta la pagina per i dati: usa `fetch`, riceve JSON e aggiorna l'HTML con JavaScript.
 

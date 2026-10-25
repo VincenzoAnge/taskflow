@@ -118,12 +118,12 @@ Quelli del progetto:
 
 | Middleware | File | Cosa fa |
 | --- | --- | --- |
-| `protect` | `middleware/auth.js` | verifica il token e mette l'utente in `req.user` |
-| `adminOnly` | `middleware/auth.js` | accetta solo `role === 'admin'` |
-| `loadProject` | `middleware/project.js` | carica il progetto e calcola `req.isOwner` e `req.isMember` |
-| `requireMember` | `middleware/project.js` | accetta solo i membri |
-| `requireOwner` | `middleware/project.js` | accetta solo il proprietario |
-| `errorHandler` | `middleware/errorHandler.js` | trasforma gli errori in risposte JSON |
+| `protect` | `middleware/authMiddleware.js` | verifica il token e mette l'utente in `req.user` |
+| `adminOnly` | `middleware/authMiddleware.js` | accetta solo `role === 'admin'` |
+| `loadProject` | `middleware/projectMiddleware.js` | carica il progetto e calcola `req.isOwner` e `req.isMember` |
+| `requireMember` | `middleware/projectMiddleware.js` | accetta solo i membri |
+| `requireOwner` | `middleware/projectMiddleware.js` | accetta solo il proprietario |
+| `errorHandler` | `middleware/errorMiddleware.js` | trasforma gli errori in risposte JSON |
 
 L'ordine conta: in `router.put('/:id', loadProject, requireOwner, controller.updateProject)` prima si carica il progetto, poi si controlla il proprietario, infine si modifica.
 
@@ -221,7 +221,7 @@ Esempi di cosa ne consegue:
 
 ## 11. Come vengono gestiti gli errori
 
-Gli errori sono gestiti in un **unico posto**: `src/middleware/errorHandler.js`.
+Gli errori sono gestiti in un **unico posto**: `src/middleware/errorMiddleware.js`.
 
 1. Nel controller, se qualcosa non va, si lancia un errore con codice: `throw new AppError('Task non trovato', 404)`. `AppError` (in `utils/AppError.js`) è una piccola classe che aggiunge `statusCode` a un errore normale.
 2. Express 5 intercetta anche gli errori delle funzioni `async` e li manda al middleware degli errori (per questo non servono `try/catch`).
@@ -261,7 +261,7 @@ Concetti chiave:
 - **Stanza (room)**: un gruppo di connessioni. In TaskFlow ogni progetto ha la stanza `project:<id>`; mandare un evento alla stanza lo fa arrivare a tutti i membri collegati e solo a loro.
 - **Autenticazione**: il client si collega con `io({ auth: { token } })` e il server controlla il token in `io.use(...)`.
 
-Come funziona la chat (`src/socket/index.js`):
+Come funziona la chat (`src/socket/socketServer.js`):
 
 1. Il client apre la pagina del progetto e invia `joinProject`; il server controlla che sia membro e lo mette nella stanza.
 2. L'utente scrive: il client invia `chatMessage`.
@@ -278,10 +278,8 @@ La board è la parte centrale di `public/project.html` e `public/js/project.js`.
 - `renderBoard()` li divide per `status` (`todo`, `doing`, `done`) e li disegna nelle tre colonne.
 - Ogni card ha un **pulsante veloce** che porta il task allo stato successivo (Da fare → In corso → Completato, e "Riapri" per tornare indietro). L'oggetto `NEXT_STEP` dice quale stato viene dopo. Il click chiama `changeStatus()`, che invia `PATCH .../tasks/:taskId/status`.
 - In più c'è il **drag and drop**: ogni card è `draggable`, le colonne ascoltano gli eventi `dragover` e `drop`; al rilascio si chiama la stessa funzione `changeStatus()`. Quindi trascinare o usare il pulsante fa esattamente la stessa cosa.
-- Cliccando una card si apre la finestra con tutti i dettagli (anche lo stato e il pulsante Elimina). Il pulsante "Aggiungi task" in fondo a una colonna apre la stessa finestra con lo stato di quella colonna già scelto.
-- La **ricerca** e il filtro **"Solo i miei task"** non chiamano il server: `visibleTasks()` filtra l'array `tasks` già scaricato e la board viene ridisegnata.
-- La barra di **avanzamento** è calcolata nel browser: task completati diviso task totali.
-- La pagina è divisa in schede Bootstrap (Board, Chat, Membri). Se arriva un messaggio mentre la chat è chiusa, un contatore rosso sulla scheda Chat indica i messaggi non letti.
+- Il pulsante con la matita apre la finestra del task: lì si modificano tutti i campi, anche lo stato, e c'è il pulsante Elimina.
+- Accanto alla board ci sono la chat e l'elenco dei membri, così tutto il progetto si vede in una sola pagina.
 - Dopo la modifica il server manda l'evento `taskMoved` e gli altri membri vedono la board aggiornarsi.
 
 ## 15. Come comunicano frontend e backend
@@ -449,6 +447,9 @@ Contiene configurazioni e segreti (database, `JWT_SECRET`). Se fosse pubblico ch
 **36. Cosa miglioreresti del progetto?**
 Paginazione, notifiche anche fuori dalla pagina, commenti sui task, recupero password, validazione più completa e test più estesi (vedi README).
 
+**37. Come hai realizzato il tema scuro?**
+Con la modalità scura già inclusa in Bootstrap 5.3: l'attributo `data-bs-theme="dark"` sul tag `<html>`. In `style.css` ho solo cambiato alcune variabili CSS (sfondo, bordi, colore principale), senza librerie in più.
+
 ---
 
 ## Percorso consigliato per studiare il codice
@@ -459,19 +460,20 @@ Leggi i file in quest'ordine: dal più semplice al più complesso, seguendo il p
 2. `.env.example` e `src/config/db.js`: configurazione e connessione al database
 3. `src/models/User.js`, `Project.js`, `Task.js`, `Message.js`: i dati
 4. `server.js`: come tutto si collega (middleware, route, Socket.IO)
-5. `src/utils/AppError.js` e `src/middleware/errorHandler.js`: come si gestiscono gli errori
+5. `src/utils/AppError.js` e `src/middleware/errorMiddleware.js`: come si gestiscono gli errori
 6. `src/routes/authRoutes.js` → `src/controllers/authController.js`: registrazione e login (bcrypt + JWT)
-7. `src/middleware/auth.js`: `protect` e `adminOnly`
-8. `src/middleware/project.js`: `loadProject`, `requireMember`, `requireOwner`
+7. `src/middleware/authMiddleware.js`: `protect` e `adminOnly`
+8. `src/middleware/projectMiddleware.js`: `loadProject`, `requireMember`, `requireOwner`
 9. `src/routes/projectRoutes.js` → `src/controllers/projectController.js`: progetti, membri, "Esplora"
 10. `src/routes/taskRoutes.js` → `src/controllers/taskController.js`: task e invio degli eventi
 11. `src/controllers/userController.js`: dashboard
-12. `src/socket/index.js` e `src/controllers/messageController.js`: chat e stanze
+12. `src/socket/socketServer.js` e `src/controllers/messageController.js`: chat e stanze
 13. `src/controllers/adminController.js` e `src/routes/adminRoutes.js`: pannello admin
 14. `src/utils/seed.js`: dati demo
-15. `public/js/common.js`: funzione `api()`, sessione, navbar, `esc()`
-16. `public/js/auth.js`, `dashboard.js`, `explore.js`, `admin.js`: pagine semplici
+15. `public/js/common.js`: funzione `api()`, sessione, navbar, `esc()`, card dei progetti
+16. `public/js/index.js`, `auth.js`, `dashboard.js`, `explore.js`, `admin.js`: pagine semplici (ogni `nome.html` usa `js/nome.js`)
 17. `public/js/project.js`: la pagina più ricca (board, chat, socket)
-18. `docs/API.md`, `docs/DATABASE.md`, `docs/ARCHITECTURE.md`: ripasso finale
+18. `public/css/style.css`: colori del tema scuro e stili di board e chat (l'indice è all'inizio del file)
+19. `docs/API.md`, `docs/DATABASE.md`, `docs/ARCHITECTURE.md`: ripasso finale
 
 Per fissare i concetti: avvia il progetto, apri Postman con la collection in `docs/` e, per ogni richiesta, trova nel codice la route, i middleware e il controller che la gestiscono.
