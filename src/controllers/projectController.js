@@ -1,12 +1,16 @@
+// Controller dei progetti: creazione, modifica, membri e progetti pubblici
+
 const Project = require('../models/Project');
 const Task = require('../models/Task');
 const Message = require('../models/Message');
 const User = require('../models/User');
 const AppError = require('../utils/AppError');
-const { removeUserFromRoom } = require('../socket');
+const { removeUserFromRoom } = require('../socket/socketServer');
 
+// Campi che il proprietario può modificare
 const editableFields = ['title', 'description', 'category', 'technologies', 'visibility', 'coverImage'];
 
+// POST /api/projects (chi crea il progetto ne diventa proprietario e membro)
 async function createProject(req, res) {
   const { title, description, category, technologies, visibility, coverImage } = req.body;
 
@@ -47,6 +51,7 @@ async function getPublicProjects(req, res) {
   res.json({ success: true, data: projects });
 }
 
+// GET /api/projects/:id
 async function getProject(req, res) {
   const project = req.project;
 
@@ -62,6 +67,7 @@ async function getProject(req, res) {
   });
 }
 
+// PUT /api/projects/:id (solo proprietario)
 async function updateProject(req, res) {
   const project = req.project;
 
@@ -75,6 +81,7 @@ async function updateProject(req, res) {
   res.json({ success: true, data: project });
 }
 
+// DELETE /api/projects/:id (solo proprietario): elimina anche task e messaggi
 async function deleteProject(req, res) {
   await Task.deleteMany({ project: req.project._id });
   await Message.deleteMany({ project: req.project._id });
@@ -83,6 +90,7 @@ async function deleteProject(req, res) {
   res.json({ success: true, data: { message: 'Progetto eliminato' } });
 }
 
+// PATCH /api/projects/:id/archive (solo proprietario)
 async function toggleArchive(req, res) {
   req.project.archived = !req.project.archived;
   await req.project.save();
@@ -90,6 +98,7 @@ async function toggleArchive(req, res) {
   res.json({ success: true, data: req.project });
 }
 
+// POST /api/projects/:id/members (solo proprietario)
 async function addMember(req, res) {
   const { email } = req.body;
   if (!email || typeof email !== 'string') {
@@ -111,6 +120,7 @@ async function addMember(req, res) {
   res.status(201).json({ success: true, data: req.project.members });
 }
 
+// DELETE /api/projects/:id/members/:userId (solo proprietario)
 async function removeMember(req, res) {
   const project = req.project;
   const userId = req.params.userId;
@@ -146,6 +156,7 @@ async function joinProject(req, res) {
   res.json({ success: true, data: project });
 }
 
+// POST /api/projects/:id/leave
 async function leaveProject(req, res) {
   if (!req.isMember) {
     throw new AppError('Non sei membro di questo progetto', 400);

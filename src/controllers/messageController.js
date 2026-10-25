@@ -1,3 +1,5 @@
+// Controller dei messaggi: storico della chat di un progetto
+
 const Message = require('../models/Message');
 
 // Ultimi 50 messaggi della chat, dal più vecchio al più recente

@@ -1,6 +1,8 @@
+// Route dell'utente loggato: /api/users
+
 const express = require('express');
 const { getDashboard } = require('../controllers/userController');
-const { protect } = require('../middleware/auth');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 

@@ -1,6 +1,8 @@
+// Route del pannello amministratore: /api/admin
+
 const express = require('express');
 const controller = require('../controllers/adminController');
-const { protect, adminOnly } = require('../middleware/auth');
+const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 

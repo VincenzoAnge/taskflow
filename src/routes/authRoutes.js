@@ -1,6 +1,8 @@
+// Route di autenticazione: /api/auth
+
 const express = require('express');
 const { register, login, me } = require('../controllers/authController');
-const { protect } = require('../middleware/auth');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 

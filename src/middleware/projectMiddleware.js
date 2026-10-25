@@ -1,3 +1,5 @@
+// Middleware dei progetti: carica il progetto dalla URL e controlla i permessi dell'utente
+
 const Project = require('../models/Project');
 const AppError = require('../utils/AppError');
 
@@ -13,6 +15,7 @@ async function loadProject(req, res, next) {
   next();
 }
 
+// Lascia passare solo i membri del progetto
 function requireMember(req, res, next) {
   if (!req.isMember) {
     throw new AppError('Devi essere membro del progetto', 403);
@@ -20,6 +23,7 @@ function requireMember(req, res, next) {
   next();
 }
 
+// Lascia passare solo il proprietario del progetto
 function requireOwner(req, res, next) {
   if (!req.isOwner) {
     throw new AppError('Solo il proprietario può eseguire questa azione', 403);

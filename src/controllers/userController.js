@@ -1,3 +1,5 @@
+// Controller dell'utente: dati della dashboard personale
+
 const Project = require('../models/Project');
 const Task = require('../models/Task');
 
@@ -9,6 +11,7 @@ function byDueDate(a, b) {
   return a.dueDate - b.dueDate;
 }
 
+// GET /api/users/me/dashboard
 async function getDashboard(req, res) {
   const userId = req.user._id;
 

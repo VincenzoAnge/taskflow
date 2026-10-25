@@ -1,12 +1,16 @@
+// Socket.IO: autenticazione con JWT, stanze dei progetti e chat in tempo reale
+
 const { Server } = require('socket.io');
 const Project = require('../models/Project');
 const Message = require('../models/Message');
-const { getUserFromToken } = require('../middleware/auth');
+const { getUserFromToken } = require('../middleware/authMiddleware');
 
+// Nome della stanza Socket.IO di un progetto
 function roomName(projectId) {
   return `project:${projectId}`;
 }
 
+// Crea il server Socket.IO collegato al server HTTP di Express
 function setupSocket(httpServer) {
   const io = new Server(httpServer);
 
@@ -33,6 +37,7 @@ function setupSocket(httpServer) {
           return;
         }
         socket.join(roomName(projectId));
+        // conferma al client che ora riceve gli eventi del progetto
         socket.emit('joined', projectId);
       } catch (err) {
         socket.emit('errorMessage', 'Progetto non valido');

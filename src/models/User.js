@@ -1,3 +1,5 @@
+// Modello User: utenti registrati (role = user oppure admin)
+
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({

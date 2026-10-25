@@ -1,3 +1,5 @@
+// Modello Message: messaggi della chat di un progetto
+
 const mongoose = require('mongoose');
 
 const messageSchema = new mongoose.Schema({

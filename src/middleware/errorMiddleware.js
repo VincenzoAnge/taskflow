@@ -1,3 +1,5 @@
+// Middleware degli errori: trasforma ogni errore in una risposta JSON { success: false, message }
+
 const AppError = require('../utils/AppError');
 
 // Risposta per le route /api che non esistono

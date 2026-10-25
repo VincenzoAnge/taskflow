@@ -1,3 +1,5 @@
+// Modello Task: ogni task appartiene a un progetto e può essere assegnato a un membro
+
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({

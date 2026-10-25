@@ -1,3 +1,5 @@
+// Modello Project: un progetto ha un proprietario (owner) e una lista di membri
+
 const mongoose = require('mongoose');
 
 const projectSchema = new mongoose.Schema({

@@ -1,3 +1,5 @@
+// Middleware di autenticazione: controllo del token JWT e del ruolo admin
+
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const AppError = require('../utils/AppError');

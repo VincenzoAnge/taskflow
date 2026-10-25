@@ -1,16 +1,21 @@
+// Controller di autenticazione: registrazione, login e utente corrente
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const AppError = require('../utils/AppError');
 
+// Dati dell'utente da mandare al client (mai la password)
 function userData(user) {
   return { id: user._id, name: user.name, email: user.email, role: user.role };
 }
 
+// Il token contiene solo l'id dell'utente e scade dopo 7 giorni
 function createToken(user) {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 }
 
+// POST /api/auth/register
 async function register(req, res) {
   const { name, email, password } = req.body;
 
@@ -36,6 +41,7 @@ async function register(req, res) {
   });
 }
 
+// POST /api/auth/login
 async function login(req, res) {
   const { email, password } = req.body;
 
@@ -60,6 +66,7 @@ async function login(req, res) {
   });
 }
 
+// GET /api/auth/me
 async function me(req, res) {
   res.json({ success: true, data: userData(req.user) });
 }

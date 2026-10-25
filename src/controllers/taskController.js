@@ -1,7 +1,10 @@
+// Controller dei task: CRUD, cambio stato e notifiche realtime
+
 const Task = require('../models/Task');
 const AppError = require('../utils/AppError');
-const { roomName } = require('../socket');
+const { roomName } = require('../socket/socketServer');
 
+// Campi modificabili con PUT (stato e assegnatario hanno una gestione a parte)
 const editableFields = ['title', 'description', 'priority'];
 
 // Avvisa in tempo reale tutti gli utenti collegati alla stanza del progetto
@@ -20,6 +23,7 @@ function checkAssignee(project, assignee) {
   }
 }
 
+// Cerca il task solo dentro il progetto corrente
 async function findTask(req) {
   const task = await Task.findOne({ _id: req.params.taskId, project: req.project._id });
   if (!task) {
@@ -28,6 +32,7 @@ async function findTask(req) {
   return task;
 }
 
+// GET /api/projects/:id/tasks
 async function getTasks(req, res) {
   const tasks = await Task.find({ project: req.project._id })
     .populate('assignee', 'name')
@@ -36,6 +41,7 @@ async function getTasks(req, res) {
   res.json({ success: true, data: tasks });
 }
 
+// POST /api/projects/:id/tasks
 async function createTask(req, res) {
   const { title, description, assignee, dueDate, priority, status } = req.body;
 
@@ -59,6 +65,7 @@ async function createTask(req, res) {
   res.status(201).json({ success: true, data: task });
 }
 
+// PUT /api/projects/:id/tasks/:taskId
 async function updateTask(req, res) {
   const task = await findTask(req);
   const oldAssignee = String(task.assignee);
@@ -87,6 +94,7 @@ async function updateTask(req, res) {
   res.json({ success: true, data: task });
 }
 
+// PATCH /api/projects/:id/tasks/:taskId/status
 async function changeStatus(req, res) {
   if (!req.body.status) {
     throw new AppError('Lo stato è obbligatorio', 400);
@@ -101,6 +109,7 @@ async function changeStatus(req, res) {
   res.json({ success: true, data: task });
 }
 
+// DELETE /api/projects/:id/tasks/:taskId
 async function deleteTask(req, res) {
   const task = await findTask(req);
   await task.deleteOne();

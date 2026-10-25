@@ -1,13 +1,17 @@
+// Controller dell'amministratore: gestione di utenti e progetti
+
 const User = require('../models/User');
 const Project = require('../models/Project');
 const AppError = require('../utils/AppError');
 
+// GET /api/admin/users
 async function getUsers(req, res) {
   const users = await User.find().sort({ createdAt: -1 });
 
   res.json({ success: true, data: users });
 }
 
+// PATCH /api/admin/users/:id/block (blocca o sblocca)
 async function toggleBlockUser(req, res) {
   const user = await User.findById(req.params.id);
   if (!user) {
@@ -28,12 +32,14 @@ async function toggleBlockUser(req, res) {
   res.json({ success: true, data: user });
 }
 
+// GET /api/admin/projects
 async function getProjects(req, res) {
   const projects = await Project.find().populate('owner', 'name email').sort({ createdAt: -1 });
 
   res.json({ success: true, data: projects });
 }
 
+// PATCH /api/admin/projects/:id/archive (nasconde o ripristina)
 async function toggleArchiveProject(req, res) {
   const project = await Project.findById(req.params.id);
   if (!project) {

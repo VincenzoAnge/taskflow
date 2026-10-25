@@ -1,8 +1,10 @@
+// Route dei progetti: /api/projects (i task sono in taskRoutes.js)
+
 const express = require('express');
 const controller = require('../controllers/projectController');
 const { getMessages } = require('../controllers/messageController');
-const { protect } = require('../middleware/auth');
-const { loadProject, requireMember, requireOwner } = require('../middleware/project');
+const { protect } = require('../middleware/authMiddleware');
+const { loadProject, requireMember, requireOwner } = require('../middleware/projectMiddleware');
 
 const router = express.Router();
 
