@@ -201,7 +201,7 @@ gh repo create taskflow-nodejs --private --description "Progetto finale Node.js 
 9. Gestione degli errori centralizzata e codici HTTP (soprattutto 401 contro 403)
 10. Socket.IO: eventi, stanze, autenticazione e differenza con le API REST
 
-Tutto è spiegato in `STUDY_GUIDE.md`, con le domande d'esame e il percorso di lettura del codice.
+Tutto è spiegato in `docs/STUDY_GUIDE.md`, con le domande d'esame e il percorso di lettura del codice.
 
 ## Limitazioni
 

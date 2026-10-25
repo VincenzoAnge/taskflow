@@ -1,10 +1,18 @@
 # TaskFlow
 
-Progetto finale Node.js: una piattaforma collaborativa per gestire progetti e task, con board Kanban, chat di progetto e aggiornamenti in tempo reale.
+Progetto d'esame del corso Node.js (ITS Academy ICT Piemonte): una piattaforma collaborativa per gestire progetti e task, con board Kanban, chat di progetto e aggiornamenti in tempo reale.
+
+![Board Kanban con chat e membri del progetto](docs/screenshots/board.webp)
 
 ## Cos'è TaskFlow
 
 Ogni utente può registrarsi, creare progetti, invitare altre persone e organizzare il lavoro in task. I task si vedono su una board con tre colonne (**Da fare**, **In corso**, **Completato**). Chi lavora sullo stesso progetto parla in una chat e riceve una notifica quando qualcun altro cambia un task. I progetti pubblici si possono scoprire dalla pagina "Esplora".
+
+I dati nelle immagini sono quelli demo creati da `npm run seed`.
+
+## Come è stato sviluppato
+
+Il codice è stato scritto con l'aiuto di un assistente AI. Lo uso per studiare Node.js, Express e MongoDB: la guida [docs/STUDY_GUIDE.md](docs/STUDY_GUIDE.md) spiega come funziona ogni parte (JWT, middleware, Mongoose, Socket.IO) e indica i file da leggere.
 
 ## Funzionalità
 
@@ -116,9 +124,7 @@ taskflow-nodejs/
 │       ├── auth.js              login e registrazione
 │       └── index.js, dashboard.js, project.js, explore.js, admin.js   uno per pagina
 ├── tests/flows.test.js          test automatici dei flussi principali
-├── docs/                        documentazione e collection Postman
-├── STUDY_GUIDE.md               guida per studiare il progetto
-└── FINAL_REPORT.md              riepilogo finale
+└── docs/                        documentazione, guida di studio, screenshot e collection Postman
 ```
 
 Convenzioni sui nomi: nel backend ogni file dice cosa contiene (`xxxRoutes.js`, `xxxController.js`, `xxxMiddleware.js`), i modelli hanno l'iniziale maiuscola come le classi (`User.js`). Nel frontend ogni pagina `nome.html` ha il suo script `js/nome.js` (login e registrazione condividono `auth.js`).
@@ -154,12 +160,9 @@ Creati da `npm run seed`. **Solo per sviluppo**, non usarli mai in un ambiente p
 
 ## Screenshot
 
-Aggiungi qui le immagini prima della consegna (salvale in `docs/screenshots/`):
+![Home](docs/screenshots/home.webp)
 
-- ![Home](docs/screenshots/home.png) *(da inserire)*
-- ![Dashboard](docs/screenshots/dashboard.png) *(da inserire)*
-- ![Board Kanban](docs/screenshots/board.png) *(da inserire)*
-- ![Pannello admin](docs/screenshots/admin.png) *(da inserire)*
+![Dashboard](docs/screenshots/dashboard.webp)
 
 ## Test
 
@@ -175,7 +178,8 @@ npm test
 - [docs/API.md](docs/API.md): tutti gli endpoint
 - [docs/DATABASE.md](docs/DATABASE.md): modelli e relazioni
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): come è organizzato il codice
-- [STUDY_GUIDE.md](STUDY_GUIDE.md): guida per studiare e preparare l'esame
+- [docs/STUDY_GUIDE.md](docs/STUDY_GUIDE.md): guida per capire il progetto parte per parte
+- [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md): riepilogo di cosa è stato fatto
 
 ## Possibili miglioramenti futuri
 
